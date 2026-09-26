@@ -125,48 +125,43 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
            autocomplete="off" maxlength="11" placeholder="XXX-XX-XXXX">
     <button type="button" id="ssnToggle" class="ssn-toggle">Mostrar</button>
   </div>
-  
-<div class="sectionLabel"><span>Foto / selfie</span><span class="aiBadge">VERIFICACIÓN DE FOTO</span></div>
-
- <div class="selfieCard">
-  <div class="selfieHead">
-   <div class="selfieTitle">Una sola cara visible</div>
-   <div class="selfieHint">COMPROBACIÓN LOCAL</div>
-  </div>
-
-  <div class="cameraBox" id="cameraBox">
-   <video id="cameraVideo" autoplay playsinline muted></video>
-   <div class="cameraGuide"><span></span></div>
-  </div>
-
-  <div class="cameraActions">
-   <button class="cameraBtn primary" id="cameraStart" type="button">▣ TOMAR SELFIE</button>
-   <button class="cameraBtn" id="cameraCapture" type="button" disabled>CAPTURAR</button>
-   <button class="cameraBtn" id="cameraStop" type="button" disabled>CERRAR</button>
-  </div>
-
-  <label class="selfieInput">
-   
-</div>
-
-
-</div>
-
-
-<div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN.</div>
+  <div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN.</div>
   <div id="ssnStatus" class="ssn-status" aria-live="polite"></div>
 </div>
 
-<input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
-   <span>O selecciona una foto de tu galería</span>
+<div class="sectionLabel">
+  <span>Foto / selfie</span>
+  <span class="aiBadge">VERIFICACIÓN DE FOTO</span>
+</div>
+
+<div class="selfieCard">
+  <div class="selfieHead">
+    <div class="selfieTitle">Una sola cara visible</div>
+    <div class="selfieHint">COMPROBACIÓN LOCAL</div>
+  </div>
+
+  <div class="cameraBox" id="cameraBox">
+    <video id="cameraVideo" autoplay playsinline muted></video>
+    <div class="cameraGuide"><span></span></div>
+  </div>
+
+  <div class="cameraActions">
+    <button class="cameraBtn primary" id="cameraStart" type="button">▣ TOMAR SELFIE</button>
+    <button class="cameraBtn" id="cameraCapture" type="button" disabled>CAPTURAR</button>
+    <button class="cameraBtn" id="cameraStop" type="button" disabled>CERRAR</button>
+  </div>
+
+  <label class="selfieInput">
+    <input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
+    <span>O selecciona una foto de tu galería</span>
   </label>
 
   <canvas id="cameraCanvas" class="hidden"></canvas>
   <img id="selfiePreview" class="selfiePreview" alt="Vista previa de selfie">
   <div id="selfieStatus" class="selfieStatus">Pulsa “Tomar selfie” para abrir la cámara frontal.</div>
- </div>
+</div>
 
- <button class="cta" id="continue" type="button">VALIDAR Y CONTINUAR</button>
+<button class="cta" id="continue" type="button">VALIDAR Y CONTINUAR</button>
  <div id="status" class="status"></div>
  <div id="warning" class="warning">Abre NEXUS desde Telegram para validar tu sesión.</div>
 

@@ -339,7 +339,7 @@ def validate_api():
         return jsonify({"ok":False,"error":error}), 400
     return jsonify({"ok":True,"validation":validation_engine(payload)})
 
-@app.get("/api/registrations/<int:reg_id>)
+@app.get("/api/registrations/<int:reg_id>")
 def get_registration(reg_id):
     valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
     if not valid:

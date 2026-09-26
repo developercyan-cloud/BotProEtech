@@ -1,57 +1,55 @@
-# Telegram Account Setup Assistant
+# NEXUS 6.3 — Railway Backend
 
-A Telegram bot + Telegram Mini App for collecting registration information for Uber, DoorDash and Lyft.
+Backend Flask + Telegram Bot para NEXUS AI.
 
-## Important
+## Railway variables
 
-This project does NOT automate CAPTCHA, identity verification, passwords, OTP codes, or other security controls. The final registration/verification step is completed through the platform's official process.
+- `TELEGRAM_BOT_TOKEN` = token del BotFather
+- `WEBAPP_URL` = URL pública de Railway, por ejemplo `https://tu-app.up.railway.app`
+- `ADMIN_KEY` = clave aleatoria para `/api/registrations`
+- `DATABASE_PATH` = opcional; por defecto `data.db`
+- `PORT` = proporcionado por Railway
 
-## Files
+## Endpoints
 
-- `app.py` — Flask API + Telegram bot
-- `templates/index.html` — Telegram Mini App UI
-- `requirements.txt` — Python dependencies
-- `Procfile` — Railway start command
+- `GET /health`
+- `GET /api/system`
+- `POST /api/register`
+- `GET /api/registrations/<id>`
+- `POST /api/registrations/<id>/event`
+- `GET /api/registrations` con `X-Admin-Key`
 
-## Environment variables
+## Validación
 
-Required:
+El servidor vuelve a validar todos los campos críticos:
+- plataforma permitida
+- nombres
+- email
+- teléfono
+- país fijo United States
+- estado válido de EE. UU.
+- ciudad
+- resultado del chequeo local de una sola cara
 
-TELEGRAM_BOT_TOKEN=your_bot_token
-WEBAPP_URL=https://your-public-domain.example
+La foto/selfie no se sube al backend en este flujo. El servidor solo recibe el indicador `single_face_detected`.
 
-Optional:
+La detección de una cara no equivale a verificar la identidad. La verificación oficial queda en el proceso autorizado de la plataforma.
+### NEXUS 7.1 — Document creation workflow
+After the client-side validation succeeds, the interface presents a futuristic creation sequence showing:
+1. Data synthesis
+2. Registration document creation
+3. Platform handoff preparation
 
-ADMIN_KEY=change-this-long-random-value
-DB_PATH=data.db
+The final action opens the selected platform's official site. The interface does not claim that an external account was created or approved unless the external platform actually completes that process.
 
-## Local test
 
-python -m venv .venv
+### NEXUS 7.4 — Face engine architecture fix
+The face detector is initialized inside the main application scope instead of through `window.NEXUSFace`. The selfie handler waits for the MediaPipe initialization promise before attempting detection. This avoids the `Cannot read properties of undefined (reading 'detect')` failure in Telegram WebView.
 
-Windows:
-.venv\Scripts\activate
 
-macOS/Linux:
-source .venv/bin/activate
+### NEXUS 7.5 — Local server face engine
+The face quality check no longer depends on MediaPipe/CDN resources. The selfie is sent over HTTPS to `/api/face-check`, analyzed in memory with OpenCV and a bundled frontal-face cascade, and is not stored. The endpoint reports face presence/count and basic framing quality only; it does not identify a person or perform biometric identity verification.
 
-pip install -r requirements.txt
 
-set TELEGRAM_BOT_TOKEN=...
-set WEBAPP_URL=https://your-https-domain.example
-
-python app.py
-
-The Mini App needs HTTPS when opened by Telegram.
-
-## Railway
-
-1. Push this project to GitHub.
-2. Create a Railway project.
-3. Deploy the GitHub repository.
-4. Add `TELEGRAM_BOT_TOKEN`.
-5. After Railway generates a domain, set `WEBAPP_URL` to that HTTPS URL.
-6. Redeploy.
-7. Open your bot in Telegram and send `/start`.
-
-For production, replace SQLite with PostgreSQL so registration data is not dependent on the local service filesystem.
+### NEXUS 7.6
+Fixed upload rejection caused by the previous 1 MB global request limit. The server now permits requests up to 12 MB while the selfie endpoint still enforces an 8 MB image limit. HTTP 413 responses are handled explicitly.

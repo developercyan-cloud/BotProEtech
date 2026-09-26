@@ -59,3 +59,7 @@ After the registration information passes the existing form validation and is su
 
 ### NEXUS 7.8 — Submission flow fix
 The document-creation animation is now triggered by the confirmed `/api/register` success event rather than a native form-submit listener. This fixes the issue where the legacy “Validación completada” screen appeared first because the main action is a `type="button"`.
+
+
+### SSN
+NEXUS 8.3 includes an SSN field with masked input, formatting and local 9-digit validation. It does not claim to verify an SSN against SSA records. SSA's official SSNVS is restricted to authorized employers/third-party submitters for permitted wage-reporting purposes, while CBSV is a consent-based service for enrolled organizations. An actual online SSA verification requires the appropriate authorized service/integration and credentials.

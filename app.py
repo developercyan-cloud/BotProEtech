@@ -1,4 +1,5 @@
 import os
+import re
 import hmac
 import hashlib
 import json
@@ -10,7 +11,7 @@ from datetime import datetime, timezone
 from urllib.parse import parse_qsl
 
 from flask import Flask, jsonify, request, render_template
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
@@ -25,14 +26,25 @@ if not BOT_TOKEN:
 if not WEBAPP_URL.startswith(("https://", "http://")):
     raise RuntimeError("WEBAPP_URL must include https://")
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 app.config["MAX_CONTENT_LENGTH"] = MAX_BODY
 
 _db_lock = threading.Lock()
 _rate_lock = threading.Lock()
 _rate = {}
 
-SERVICES = {"uber", "doordash", "lyft"}
+SERVICES = {"uber", "doordash", "lyft", "amazon", "grubhub"}
+
+US_STATES = {
+    "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN",
+    "IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV",
+    "NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN",
+    "TX","UT","VT","VA","WA","WV","WI","WY","DC"
+}
+
+NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' -]{1,39}$")
+CITY_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' .-]{1,49}$")
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 
 def now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -48,14 +60,17 @@ def init_db():
         conn.execute("""
         CREATE TABLE IF NOT EXISTS registrations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            telegram_user_id TEXT,
+            telegram_user_id TEXT NOT NULL,
             telegram_username TEXT,
             service TEXT NOT NULL,
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
             email TEXT NOT NULL,
             phone TEXT NOT NULL,
+            country TEXT NOT NULL,
+            state TEXT NOT NULL,
             city TEXT NOT NULL,
+            face_check TEXT NOT NULL DEFAULT 'not_checked',
             status TEXT NOT NULL DEFAULT 'profile_received',
             readiness INTEGER NOT NULL DEFAULT 0,
             passport_ref TEXT UNIQUE NOT NULL,
@@ -116,7 +131,8 @@ def telegram_user(parsed):
 
 def client_ip_hash():
     ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
-    return hashlib.sha256((ip + ADMIN_KEY).encode()).hexdigest()[:20]
+    salt = ADMIN_KEY or BOT_TOKEN
+    return hashlib.sha256((ip + salt).encode()).hexdigest()[:20]
 
 def rate_limit(bucket, limit=30, window=60):
     key = f"{bucket}:{client_ip_hash()}"
@@ -142,197 +158,218 @@ def add_event(reg_id, event_type, message, severity="info", metadata=None):
         conn.commit()
         conn.close()
 
-async def start(update, context: ContextTypes.DEFAULT_TYPE):
-    kb = [[InlineKeyboardButton("🚀 Open NEXUS Verification",
-                                web_app=WebAppInfo(url=WEBAPP_URL))]]
+def clean(value, max_len=120):
+    if not isinstance(value, str):
+        return ""
+    return " ".join(value.strip().split())[:max_len]
+
+def validate_payload(data):
+    if not isinstance(data, dict):
+        return None, "Invalid JSON body"
+
+    service = clean(data.get("service"), 20).lower()
+    first = clean(data.get("first_name"), 40)
+    last = clean(data.get("last_name"), 40)
+    email = clean(data.get("email"), 120).lower()
+    phone = clean(data.get("phone"), 30)
+    country = clean(data.get("country"), 40)
+    state = clean(data.get("state"), 2).upper()
+    city = clean(data.get("city"), 50)
+    face_check = clean(data.get("selfie_face_check"), 40).lower()
+
+    if service not in SERVICES:
+        return None, "Unsupported platform"
+    if not NAME_RE.fullmatch(first):
+        return None, "Invalid first name"
+    if not NAME_RE.fullmatch(last):
+        return None, "Invalid last name"
+    if first.casefold() == last.casefold():
+        return None, "First name and last name cannot be identical"
+    if not EMAIL_RE.fullmatch(email):
+        return None, "Invalid email"
+    digits = re.sub(r"\D", "", phone)
+    if len(digits) not in (10, 11):
+        return None, "Invalid US phone number"
+    if len(email) > 120:
+        return None, "Email too long"
+    if country != "United States":
+        return None, "Country must be United States"
+    if state not in US_STATES:
+        return None, "Invalid US state"
+    if not CITY_RE.fullmatch(city):
+        return None, "Invalid city"
+    if face_check != "single_face_detected":
+        return None, "Face check not completed"
+
+    return {
+        "service": service,
+        "first_name": first,
+        "last_name": last,
+        "email": email,
+        "phone": phone,
+        "country": country,
+        "state": state,
+        "city": city,
+        "face_check": face_check
+    }, None
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[InlineKeyboardButton(
+        "🚀 Open NEXUS AI",
+        web_app=WebAppInfo(url=WEBAPP_URL)
+    )]]
     await update.message.reply_text(
-        "NEXUS AI\n\nOpen the verification preparation center below.",
-        reply_markup=InlineKeyboardMarkup(kb)
+        "NEXUS AI\n\nPreparación inteligente de tu registro.",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-async def help_cmd(update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Use /start to open NEXUS AI.")
-
-@app.route("/")
+@app.get("/")
 def index():
     return render_template("index.html")
 
 @app.get("/health")
 def health():
+    try:
+        conn = db()
+        conn.execute("SELECT 1").fetchone()
+        conn.close()
+        database = "ok"
+    except Exception:
+        database = "error"
     return jsonify({
         "ok": True,
         "service": "NEXUS AI",
-        "version": "5.0",
-        "time": now(),
-        "database": os.path.exists(DATABASE)
+        "version": "6.3",
+        "database": database
     })
 
 @app.get("/api/system")
 def system():
     return jsonify({
         "ok": True,
-        "engine": "NEXUS CORE",
-        "version": "5.0",
-        "modules": [
-            "profile_engine",
-            "consistency_engine",
-            "document_quality",
-            "security_layer",
-            "verification_passport"
-        ],
-        "official_verification": "external_platform_required"
+        "version": "6.3",
+        "services": sorted(SERVICES),
+        "country_locked": "United States",
+        "face_check": "single_face_detected"
     })
 
 @app.post("/api/register")
 def register():
     if not rate_limit("register", 20, 60):
-        return jsonify({"ok": False, "error": "Rate limit exceeded"}), 429
+        return jsonify({"error": "Too many requests. Try again shortly."}), 429
 
     init_data = request.headers.get("X-Telegram-Init-Data", "")
     valid, parsed = validate_init_data(init_data)
     if not valid:
-        with _db_lock:
-            conn = db()
-            conn.execute("INSERT INTO security_events(event_type,ip_hash,user_agent,created_at) VALUES(?,?,?,?)",
-                         ("invalid_telegram_auth", client_ip_hash(), request.headers.get("User-Agent","")[:300], now()))
-            conn.commit(); conn.close()
-        return jsonify({"ok": False, "error": "Invalid Telegram authentication"}), 401
+        return jsonify({"error": "Invalid Telegram authentication"}), 401
 
-    data = request.get_json(silent=True) or {}
-    service = str(data.get("service", "")).strip().lower()
-    fields = {k: str(data.get(k, "")).strip() for k in
-              ("first_name","last_name","email","phone","city")}
+    telegram_id, username = telegram_user(parsed)
+    if not telegram_id:
+        return jsonify({"error": "Telegram user information unavailable"}), 401
 
-    if service not in SERVICES:
-        return jsonify({"ok": False, "error": "Invalid service"}), 400
-    missing = [k for k,v in fields.items() if not v]
-    if missing:
-        return jsonify({"ok": False, "error": "Missing fields", "fields": missing}), 400
-
-    email_ok = "@" in fields["email"] and "." in fields["email"].split("@")[-1]
-    phone_digits = sum(c.isdigit() for c in fields["phone"])
-    signals = len(missing) + (0 if email_ok else 1) + (0 if phone_digits >= 7 else 1)
-    readiness = max(35, min(99, 86 - signals * 10))
-
-    uid, username = telegram_user(parsed)
-    ref = passport()
-    stamp = now()
+    payload, error = validate_payload(request.get_json(silent=True) or {})
+    if error:
+        return jsonify({"error": error}), 400
 
     with _db_lock:
         conn = db()
+        created = now()
+        ref = passport()
         cur = conn.execute("""
-          INSERT INTO registrations
-          (telegram_user_id,telegram_username,service,first_name,last_name,email,phone,city,
-           status,readiness,passport_ref,created_at,updated_at)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """, (uid, username, service, fields["first_name"], fields["last_name"],
-              fields["email"], fields["phone"], fields["city"],
-              "consistency_review" if signals else "profile_ready",
-              readiness, ref, stamp, stamp))
+            INSERT INTO registrations
+            (telegram_user_id,telegram_username,service,first_name,last_name,email,phone,
+             country,state,city,face_check,status,readiness,passport_ref,created_at,updated_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            telegram_id, username, payload["service"], payload["first_name"],
+            payload["last_name"], payload["email"], payload["phone"],
+            payload["country"], payload["state"], payload["city"],
+            payload["face_check"], "profile_received", 60, ref, created, created
+        ))
         reg_id = cur.lastrowid
-        conn.commit(); conn.close()
+        conn.commit()
+        conn.close()
 
-    add_event(reg_id, "profile_created", "Profile received by NEXUS CORE.", "info",
-              {"service": service})
-    add_event(reg_id, "consistency_check",
-              "Local structure and contact-format checks completed.",
-              "warning" if signals else "success",
-              {"signals": signals, "readiness": readiness})
+    add_event(reg_id, "profile_received", "Profile information received", "info")
+    add_event(reg_id, "field_validation", "Server-side validation passed", "info")
+    add_event(reg_id, "face_check", "Local single-face check reported as passed", "info",
+              {"face_check": payload["face_check"]})
 
     return jsonify({
         "ok": True,
         "registration_id": reg_id,
         "passport_ref": ref,
-        "status": "consistency_review" if signals else "profile_ready",
-        "readiness": readiness,
-        "signals": signals
-    })
+        "status": "profile_received",
+        "readiness": 60
+    }), 201
+
+@app.get("/api/registrations/<int:reg_id>")
+def get_registration(reg_id):
+    valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
+    if not valid:
+        return jsonify({"error": "Invalid Telegram authentication"}), 401
+    telegram_id, _ = telegram_user(parsed)
+    conn = db()
+    row = conn.execute(
+        "SELECT * FROM registrations WHERE id=? AND telegram_user_id=?",
+        (reg_id, telegram_id)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"error": "Registration not found"}), 404
+    data = dict(row)
+    data.pop("telegram_user_id", None)
+    return jsonify({"ok": True, "registration": data})
 
 @app.post("/api/registrations/<int:reg_id>/event")
 def event(reg_id):
     if not rate_limit("event", 60, 60):
-        return jsonify({"ok": False, "error": "Rate limit exceeded"}), 429
-    init_data = request.headers.get("X-Telegram-Init-Data", "")
-    valid, _ = validate_init_data(init_data)
+        return jsonify({"error": "Too many requests"}), 429
+    valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
     if not valid:
-        return jsonify({"ok": False, "error": "Invalid Telegram authentication"}), 401
-
-    data = request.get_json(silent=True) or {}
-    allowed = {"profile_updated","consistency_completed","document_received",
-               "document_quality_review","security_checked","ready_for_official_flow"}
-    typ = str(data.get("event_type","")).strip()
-    if typ not in allowed:
-        return jsonify({"ok": False, "error": "Invalid event type"}), 400
-
-    msg = str(data.get("message", "")).strip()[:300] or typ
-    severity = str(data.get("severity","info")).strip()
-    if severity not in {"info","success","warning"}:
-        severity = "info"
-
+        return jsonify({"error": "Invalid Telegram authentication"}), 401
+    telegram_id, _ = telegram_user(parsed)
     conn = db()
-    exists = conn.execute("SELECT id FROM registrations WHERE id=?", (reg_id,)).fetchone()
+    row = conn.execute(
+        "SELECT id FROM registrations WHERE id=? AND telegram_user_id=?",
+        (reg_id, telegram_id)
+    ).fetchone()
     conn.close()
-    if not exists:
-        return jsonify({"ok": False, "error": "Registration not found"}), 404
-
-    add_event(reg_id, typ, msg, severity, data.get("metadata", {}))
-    if typ == "ready_for_official_flow":
-        with _db_lock:
-            conn = db()
-            conn.execute("UPDATE registrations SET status=?,updated_at=? WHERE id=?",
-                         ("ready_for_official_flow", now(), reg_id))
-            conn.commit(); conn.close()
+    if not row:
+        return jsonify({"error": "Registration not found"}), 404
+    body = request.get_json(silent=True) or {}
+    event_type = clean(body.get("event_type"), 40)
+    message = clean(body.get("message"), 200)
+    if not event_type or not message:
+        return jsonify({"error": "Invalid event"}), 400
+    add_event(reg_id, event_type, message)
     return jsonify({"ok": True})
-
-@app.get("/api/registrations/<int:reg_id>")
-def registration(reg_id):
-    init_data = request.headers.get("X-Telegram-Init-Data", "")
-    valid, parsed = validate_init_data(init_data)
-    if not valid:
-        return jsonify({"ok": False, "error": "Invalid Telegram authentication"}), 401
-    uid, _ = telegram_user(parsed)
-    conn = db()
-    row = conn.execute("""
-      SELECT id,telegram_user_id,service,first_name,last_name,email,phone,city,status,
-             readiness,passport_ref,created_at,updated_at
-      FROM registrations WHERE id=?
-    """,(reg_id,)).fetchone()
-    if not row or (uid and row["telegram_user_id"] != uid):
-        conn.close()
-        return jsonify({"ok": False, "error": "Not found"}), 404
-    events = conn.execute("""
-      SELECT event_type,message,severity,created_at
-      FROM verification_events WHERE registration_id=? ORDER BY id ASC
-    """,(reg_id,)).fetchall()
-    conn.close()
-    return jsonify({"ok":True,"registration":dict(row),"events":[dict(x) for x in events]})
 
 @app.get("/api/registrations")
 def admin_registrations():
-    if not ADMIN_KEY:
-        return jsonify({"ok":False,"error":"Admin endpoint is not configured"}),403
-    if not hmac.compare_digest(request.headers.get("X-Admin-Key",""), ADMIN_KEY):
-        return jsonify({"ok":False,"error":"Unauthorized"}),401
-    conn=db()
-    rows=conn.execute("""
-      SELECT id,service,first_name,last_name,email,phone,city,status,readiness,
-             passport_ref,created_at,updated_at
-      FROM registrations ORDER BY id DESC LIMIT 500
+    key = request.headers.get("X-Admin-Key", "")
+    if not ADMIN_KEY or not hmac.compare_digest(key, ADMIN_KEY):
+        return jsonify({"error": "Unauthorized"}), 401
+    conn = db()
+    rows = conn.execute("""
+        SELECT id,service,first_name,last_name,email,phone,country,state,city,
+               face_check,status,readiness,passport_ref,created_at,updated_at
+        FROM registrations ORDER BY id DESC LIMIT 500
     """).fetchall()
     conn.close()
-    return jsonify({"ok":True,"count":len(rows),"registrations":[dict(r) for r in rows]})
+    return jsonify({"ok": True, "registrations": [dict(r) for r in rows]})
 
 def run_web():
-    app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False, threaded=True)
+    app.run(host="0.0.0.0", port=PORT, threaded=True)
 
 def run_bot():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_cmd))
-    print("NEXUS Telegram bot running")
     application.run_polling(close_loop=False)
 
 if __name__ == "__main__":
     init_db()
-    threading.Thread(target=run_web, daemon=True).start()
+    # Flask runs in the background; Telegram polling remains on the main thread.
+    web_thread = threading.Thread(target=run_web, daemon=True)
+    web_thread.start()
     run_bot()

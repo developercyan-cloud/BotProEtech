@@ -60,69 +60,18 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 .riskBar{margin-top:10px}.riskMeta{display:flex;justify-content:space-between;font-size:8px;color:#697587;margin-bottom:5px}.riskTrack{height:4px;background:#222a35;border-radius:9px;overflow:hidden}.riskTrack i{display:block;height:100%;width:0;background:linear-gradient(90deg,#35d399,#8b5cf6,#ffbf69);transition:width .7s}
 </style>
 
-<style>
-/* NEXUS 8.4 — SSN field alignment */
-.ssn-field{
-  width:100%;
-  margin:16px 0 0;
-  box-sizing:border-box;
-}
-.ssn-field .field-label{
-  display:block;
-  margin:0 0 7px;
-  font-size:12px;
-  line-height:1.3;
-  font-weight:700;
-  letter-spacing:.01em;
-}
-.ssn-control{
-  width:100%;
-  display:flex;
-  align-items:stretch;
-  gap:8px;
-  box-sizing:border-box;
-}
-.ssn-control input{
-  flex:1 1 auto;
-  min-width:0;
-  width:auto;
-  height:44px;
-  box-sizing:border-box;
-  margin:0;
-}
-.ssn-toggle{
-  flex:0 0 74px;
-  height:44px;
-  box-sizing:border-box;
-  margin:0;
-  border-radius:10px;
-  border:1px solid rgba(140,110,255,.28);
-  background:rgba(120,85,255,.08);
-  color:#cfc6ff;
-  font-size:10px;
-  font-weight:700;
-  cursor:pointer;
-}
-.ssn-toggle:hover{background:rgba(120,85,255,.15)}
-.ssn-toggle:active{transform:translateY(1px)}
-.ssn-field .field-help{
-  margin:6px 2px 0;
-  color:#747e9c;
-  font-size:9px;
-  line-height:1.4;
-}
-.ssn-status{
-  min-height:14px;
-  margin:4px 2px 0;
-  font-size:9px;
-  line-height:1.35;
-}
-.ssn-status.ok{color:#69e5b8}
-.ssn-status.bad{color:#ff8d9d}
-@media(max-width:420px){
-  .ssn-control{gap:6px}
-  .ssn-toggle{flex-basis:68px;padding:0 8px}
-}
+
+
+
+<style id="nexus-ssn-style">
+.ssn-field{width:100%;margin:14px 0;box-sizing:border-box}
+.ssn-field label{display:block;margin-bottom:7px;font-size:12px;font-weight:700}
+.ssn-control{display:flex;gap:8px;width:100%;align-items:stretch}
+.ssn-control input{flex:1;min-width:0;height:44px;box-sizing:border-box}
+.ssn-toggle{width:74px;height:44px;flex:0 0 74px;border-radius:10px;border:1px solid rgba(140,110,255,.28);background:rgba(120,85,255,.08);color:#cfc6ff;font-size:10px;font-weight:700;cursor:pointer}
+.ssn-field .field-help{margin:5px 2px 0;color:#747e9c;font-size:9px}
+.ssn-status{min-height:14px;margin:4px 2px 0;font-size:9px}
+.ssn-status.ok{color:#69e5b8}.ssn-status.bad{color:#ff8d9d}
 </style>
 
 </head>
@@ -190,20 +139,20 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 
   <label class="selfieInput">
    
-<div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN. Se utiliza únicamente para el proceso que corresponda.</div>
-  <div id="ssnStatus" class="ssn-status"></div>
+</div>
+
+
 </div>
 
 
 <div class="field-group ssn-field">
-  <label class="field-label" for="ssn">Número de Seguro Social (SSN)</label>
+  <label for="ssn">Número de Seguro Social (SSN)</label>
   <div class="ssn-control">
     <input id="ssn" name="ssn" type="password" inputmode="numeric"
-           autocomplete="off" maxlength="11" placeholder="XXX-XX-XXXX"
-           aria-describedby="ssnHelp">
-    <button type="button" id="ssnToggle" class="ssn-toggle" aria-label="Mostrar SSN">Mostrar</button>
+           autocomplete="off" maxlength="11" placeholder="XXX-XX-XXXX">
+    <button type="button" id="ssnToggle" class="ssn-toggle">Mostrar</button>
   </div>
-  <div id="ssnHelp" class="field-help">9 dígitos · Solo se utiliza para completar el proceso de registro.</div>
+  <div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN.</div>
   <div id="ssnStatus" class="ssn-status" aria-live="polite"></div>
 </div>
 
@@ -703,40 +652,27 @@ if(!tg)$("warning").style.display="block";
 
 <div style="display:none" aria-hidden="true">La comprobación de un SSN contra registros de la Administración del Seguro Social (SSA) no se realiza mediante una consulta pública. Los servicios oficiales SSNVS/CBSV requieren autorización y condiciones específicas.</div>
 
-<script>
+
+
+
+<script id="nexus-ssn-script">
 (function(){
   const input=document.getElementById('ssn');
   const toggle=document.getElementById('ssnToggle');
   const status=document.getElementById('ssnStatus');
   if(!input)return;
-
-  function getDigits(){return input.value.replace(/\D/g,'').slice(0,9)}
-  function format(v){
-    if(v.length<=3)return v;
-    if(v.length<=5)return v.slice(0,3)+'-'+v.slice(3);
-    return v.slice(0,3)+'-'+v.slice(3,5)+'-'+v.slice(5);
-  }
+  function digits(){return input.value.replace(/\D/g,'').slice(0,9)}
+  function format(d){return d.length<=3?d:d.length<=5?d.slice(0,3)+'-'+d.slice(3):d.slice(0,3)+'-'+d.slice(3,5)+'-'+d.slice(5)}
   function check(){
-    const d=getDigits();
-    input.value=format(d);
+    const d=digits(); input.value=format(d);
     if(!d){status.textContent='';status.className='ssn-status';return false}
-    if(d.length!==9){
-      status.textContent='Ingresa los 9 dígitos del SSN.';
-      status.className='ssn-status bad'; return false;
-    }
-    if(/^(\d)\1{8}$/.test(d) || d==='000000000' || d==='123456789'){
-      status.textContent='El número ingresado no tiene un formato válido.';
-      status.className='ssn-status bad'; return false;
-    }
-    status.textContent='Formato correcto.';
-    status.className='ssn-status ok'; return true;
+    if(d.length!==9){status.textContent='Ingresa los 9 dígitos del SSN.';status.className='ssn-status bad';return false}
+    if(/^(\d)\1{8}$/.test(d)||d==='000000000'||d==='123456789'){status.textContent='El número ingresado no tiene un formato válido.';status.className='ssn-status bad';return false}
+    status.textContent='Formato correcto.';status.className='ssn-status ok';return true
   }
   input.addEventListener('input',check);
   toggle.addEventListener('click',function(){
-    const show=input.type==='password';
-    input.type=show?'text':'password';
-    toggle.textContent=show?'Ocultar':'Mostrar';
-    toggle.setAttribute('aria-label',show?'Ocultar SSN':'Mostrar SSN');
+    const show=input.type==='password';input.type=show?'text':'password';toggle.textContent=show?'Ocultar':'Mostrar';
   });
   window.NEXUS_SSN_VALID=check;
 })();

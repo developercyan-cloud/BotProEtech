@@ -77,6 +77,16 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 .advanced{margin-top:12px;border:1px solid #171e29;border-radius:15px;background:#0a0e14}.advanced summary{padding:12px;color:#788394;font-size:10px;cursor:pointer;list-style:none}.advanced summary::-webkit-details-marker{display:none}.advanced summary:after{content:"＋";float:right}.advanced[open] summary:after{content:"−"}.details{padding:0 12px 12px;color:#778293;font-size:10px;line-height:1.6}.hidden{display:none!important}.warning{display:none;padding:10px;margin-top:10px;border:1px solid #5b2730;border-radius:11px;background:#190d11;color:#ff9aaa;font-size:10px;text-align:center}
 @media(max-width:430px){.platforms{grid-template-columns:repeat(3,1fr)}.row{grid-template-columns:1fr}.platform strong{font-size:9px}}
 
+
+.cameraBox{position:relative;display:none;min-height:190px;border:1px solid #303a4a;border-radius:14px;overflow:hidden;background:#030507}
+.cameraBox.active{display:block}
+#cameraVideo{display:block;width:100%;height:240px;object-fit:cover;transform:scaleX(-1)}
+.cameraGuide{position:absolute;inset:20px;display:grid;place-items:center;pointer-events:none}
+.cameraGuide span{width:150px;height:190px;border:2px solid #9d7aff;border-radius:50%;box-shadow:0 0 25px #8b5cf655}
+.cameraActions{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:7px;margin-top:8px}
+.cameraBtn{padding:11px 5px;border-radius:11px;border:1px solid #273140;background:#0b1017;color:#dce2ec;font-size:9px;font-weight:800}
+.cameraBtn.primary{border-color:#8b5cf6;background:#171126;color:#fff}
+.cameraBtn:disabled{opacity:.4}
 .selfieCard{border:1px solid #202835;border-radius:15px;background:#090d13;padding:12px}
 .selfieHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
 .selfieTitle{font-size:11px;font-weight:800}.selfieHint{font-size:8px;color:#6f7a8c}
@@ -87,6 +97,16 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 .selfiePreview{display:none;width:100%;height:150px;object-fit:cover;border-radius:10px}
 .selfieStatus{margin-top:8px;min-height:17px;font-size:9px;color:#7e899a}
 .selfieStatus.ok{color:#35d399}.selfieStatus.error{color:#ff667d}.selfieLoading{color:#b39cff}
+
+.validationEngine{margin-top:15px;border:1px solid #252f40;border-radius:18px;background:linear-gradient(145deg,#0b1018,#0a0d14);overflow:hidden;box-shadow:0 15px 45px #0006}
+.engineTop{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid #202936}
+.engineName{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:900;letter-spacing:.08em}.engineOrb{width:10px;height:10px;border-radius:50%;background:#8b5cf6;box-shadow:0 0 16px #8b5cf6;animation:enginePulse 1.7s infinite}@keyframes enginePulse{50%{transform:scale(1.35);opacity:.7}}
+.engineState{font-size:8px;color:#8d99aa;letter-spacing:.1em}.engineState.running{color:#b89cff}.engineState.pass{color:#35d399}.engineState.review{color:#ffbf69}
+.engineBody{padding:13px 14px}.scoreRow{display:flex;align-items:center;gap:14px}.scoreRing{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#8b5cf6 0deg,#b89cff 0deg,#242d3b 0deg);position:relative;flex:none}.scoreRing:after{content:"";position:absolute;inset:7px;border-radius:50%;background:#0b1018}.scoreNumber{position:relative;z-index:1;font-size:17px;font-weight:900}.scoreInfo{flex:1}.scoreLabel{font-size:9px;color:#778294;text-transform:uppercase;letter-spacing:.08em}.scoreTitle{font-size:14px;font-weight:800;margin-top:4px}.scoreSub{font-size:9px;color:#657083;margin-top:4px;line-height:1.4}
+.validationGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:13px}.vCheck{border:1px solid #1e2735;border-radius:11px;padding:9px;background:#080c12;display:flex;align-items:center;gap:8px;min-width:0}.vIcon{width:20px;height:20px;border-radius:7px;display:grid;place-items:center;background:#1a2230;color:#707c8d;font-size:10px;flex:none}.vCheck.pass{border-color:#205440}.vCheck.pass .vIcon{background:#10281f;color:#35d399}.vCheck.warn{border-color:#5b472b}.vCheck.warn .vIcon{background:#2a2112;color:#ffbf69}.vCheck.fail{border-color:#5b2730}.vCheck.fail .vIcon{background:#291117;color:#ff667d}.vText{min-width:0}.vText strong{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vText span{display:block;font-size:7px;color:#667284;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scanLine{height:2px;background:#161e2a;margin-top:12px;overflow:hidden;border-radius:10px}.scanLine i{display:block;width:30%;height:100%;background:linear-gradient(90deg,transparent,#8b5cf6,#56d8ff,transparent);animation:scan 1.4s linear infinite}@keyframes scan{from{transform:translateX(-120%)}to{transform:translateX(420%)}}
+.findings{margin-top:10px;font-size:8px;color:#697587;min-height:13px}.finding{display:flex;gap:5px;align-items:center}.finding b{width:5px;height:5px;border-radius:50%;background:#35d399;box-shadow:0 0 7px #35d399}
+.riskBar{margin-top:10px}.riskMeta{display:flex;justify-content:space-between;font-size:8px;color:#697587;margin-bottom:5px}.riskTrack{height:4px;background:#222a35;border-radius:9px;overflow:hidden}.riskTrack i{display:block;height:100%;width:0;background:linear-gradient(90deg,#35d399,#8b5cf6,#ffbf69);transition:width .7s}
 </style>
 </head>
 <body>
@@ -139,15 +159,26 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
    <div class="selfieTitle">Una sola cara visible</div>
    <div class="selfieHint">VALIDACIÓN LOCAL</div>
   </div>
-  <label class="selfieInput" id="selfieDrop">
+
+  <div class="cameraBox" id="cameraBox">
+   <video id="cameraVideo" autoplay playsinline muted></video>
+   <div class="cameraGuide"><span></span></div>
+  </div>
+
+  <div class="cameraActions">
+   <button class="cameraBtn primary" id="cameraStart" type="button">▣ TOMAR SELFIE</button>
+   <button class="cameraBtn" id="cameraCapture" type="button" disabled>CAPTURAR</button>
+   <button class="cameraBtn" id="cameraStop" type="button" disabled>CERRAR</button>
+  </div>
+
+  <label class="selfieInput">
    <input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
-   <div class="selfiePlaceholder" id="selfiePlaceholder">
-    <div class="selfieIcon">◎</div>
-    Toca para tomar una selfie<br>o seleccionar una foto
-   </div>
-   <img id="selfiePreview" class="selfiePreview" alt="Vista previa de selfie">
+   <span>O seleccionar una foto de la galería</span>
   </label>
-  <div id="selfieStatus" class="selfieStatus">La foto se analiza en este dispositivo para comprobar que contiene una sola cara.</div>
+
+  <canvas id="cameraCanvas" class="hidden"></canvas>
+  <img id="selfiePreview" class="selfiePreview" alt="Vista previa de selfie">
+  <div id="selfieStatus" class="selfieStatus">Pulsa “Tomar selfie” para abrir la cámara frontal.</div>
  </div>
 
  <button class="cta" id="continue" type="button">VALIDAR Y CONTINUAR</button>
@@ -159,6 +190,34 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
   <div class="checkItem"><strong id="c2">—</strong><span>Contacto</span></div>
   <div class="checkItem"><strong id="c3">—</strong><span>Ubicación</span></div>
  </div>
+ <div class="validationEngine">
+  <div class="engineTop">
+   <div class="engineName"><i class="engineOrb"></i>NEXUS VALIDATION ENGINE</div>
+   <div id="engineState" class="engineState">STANDBY</div>
+  </div>
+  <div class="engineBody">
+   <div class="scoreRow">
+    <div class="scoreRing" id="scoreRing"><span class="scoreNumber" id="scoreNumber">—</span></div>
+    <div class="scoreInfo">
+     <div class="scoreLabel">Readiness analysis</div>
+     <div class="scoreTitle" id="scoreTitle">Waiting for data</div>
+     <div class="scoreSub" id="scoreSub">The engine will analyze structure, consistency, contact and photo quality.</div>
+    </div>
+   </div>
+   <div class="validationGrid">
+    <div class="vCheck" id="vIdentity"><div class="vIcon">◎</div><div class="vText"><strong>Profile</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vContact"><div class="vIcon">⌁</div><div class="vText"><strong>Contact</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vLocation"><div class="vIcon">⌖</div><div class="vText"><strong>Location</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vFace"><div class="vIcon">◉</div><div class="vText"><strong>Face check</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vPlatform"><div class="vIcon">◆</div><div class="vText"><strong>Platform</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vIntegrity"><div class="vIcon">◇</div><div class="vText"><strong>Integrity</strong><span>Waiting</span></div></div>
+   </div>
+   <div class="scanLine"><i></i></div>
+   <div class="findings" id="findings"><div class="finding"><b></b> Engine ready for analysis</div></div>
+   <div class="riskBar"><div class="riskMeta"><span>Validation coverage</span><span id="coverageText">0%</span></div><div class="riskTrack"><i id="coverageBar"></i></div></div>
+  </div>
+ </div>
+
 </div>
 
 <div id="result" class="result hidden">
@@ -178,7 +237,7 @@ const tg=window.Telegram?.WebApp||null;if(tg){tg.ready();tg.expand();tg.setHeade
 let service="uber";
 const $=id=>document.getElementById(id);
 const fields={first:$("first"),last:$("last"),email:$("email"),phone:$("phone"),country:$("country"),state:$("state"),city:$("city")};
-const selfie=$("selfie"), selfiePreview=$("selfiePreview"), selfiePlaceholder=$("selfiePlaceholder"), selfieStatus=$("selfieStatus");
+const selfie=$("selfie"), selfiePreview=$("selfiePreview"), selfieStatus=$("selfieStatus"), cameraBox=$("cameraBox"), cameraVideo=$("cameraVideo"), cameraCanvas=$("cameraCanvas"), cameraStart=$("cameraStart"), cameraCapture=$("cameraCapture"), cameraStop=$("cameraStop");
 let selfieFile=null, selfieResult=null;
 
 const states=[
@@ -210,46 +269,154 @@ return good;
 }
 
 
-selfie.addEventListener("change", async ()=>{
-  selfieFile = selfie.files?.[0] || null;
-  selfieResult = null;
-  selfiePreview.style.display = "none";
-  selfiePlaceholder.style.display = "block";
-  selfieStatus.className = "selfieStatus";
-  if(!selfieFile){ selfieStatus.textContent="La foto es obligatoria."; return; }
+let cameraStream=null;
 
+function setSelfieStatus(text, cls="selfieStatus"){
+  selfieStatus.className=cls;
+  selfieStatus.textContent=text;
+}
+
+async function validateSelfieFile(file){
+  selfieResult=null;
+  if(!file){setSelfieStatus("Agrega una foto o selfie.","selfieStatus error");return;}
   const allowed=["image/jpeg","image/png","image/webp"];
-  if(!allowed.includes(selfieFile.type)){
-    selfie.value="";
-    selfieFile=null;
-    selfieStatus.className="selfieStatus error";
-    selfieStatus.textContent="Formato no permitido. Usa JPG, PNG o WEBP.";
+  if(!allowed.includes(file.type)){
+    setSelfieStatus("Formato no permitido. Usa JPG, PNG o WEBP.","selfieStatus error");
     return;
   }
-  if(selfieFile.size > 8*1024*1024){
-    selfie.value="";
-    selfieFile=null;
-    selfieStatus.className="selfieStatus error";
-    selfieStatus.textContent="La imagen supera 8 MB.";
+  if(file.size>8*1024*1024){
+    setSelfieStatus("La imagen supera 8 MB.","selfieStatus error");
     return;
   }
-
-  selfiePreview.src=URL.createObjectURL(selfieFile);
-  selfiePreview.style.display="block";
-  selfiePlaceholder.style.display="none";
   selfieStatus.className="selfieStatus selfieLoading";
   selfieStatus.textContent="Analizando la imagen…";
-
   try{
-    selfieResult=await window.NEXUSFace.detect(selfieFile);
+    selfieResult=await window.NEXUSFace.detect(file);
     selfieStatus.className="selfieStatus "+(selfieResult.ok?"ok":"error");
     selfieStatus.textContent=selfieResult.message;
   }catch(e){
     selfieResult={ok:false,count:0};
-    selfieStatus.className="selfieStatus error";
-    selfieStatus.textContent=e.message;
+    setSelfieStatus(e.message||"No fue posible analizar la imagen.","selfieStatus error");
   }
+}
+
+function showPreview(url){
+  selfiePreview.src=url;
+  selfiePreview.style.display="block";
+}
+
+async function startCamera(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    setSelfieStatus("Tu navegador no permite acceso directo a la cámara. Usa la opción de galería.","selfieStatus error");
+    return;
+  }
+  try{
+    stopCamera();
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"user"},width:{ideal:1280},height:{ideal:720}},
+      audio:false
+    });
+    cameraVideo.srcObject=cameraStream;
+    cameraBox.classList.add("active");
+    cameraCapture.disabled=false;
+    cameraStop.disabled=false;
+    cameraStart.disabled=true;
+    setSelfieStatus("Centra tu rostro dentro del óvalo y pulsa CAPTURAR.");
+  }catch(e){
+    console.error(e);
+    setSelfieStatus("No se pudo abrir la cámara. Concede permiso de cámara a Telegram o usa la galería.","selfieStatus error");
+  }
+}
+
+function stopCamera(){
+  if(cameraStream){
+    cameraStream.getTracks().forEach(t=>t.stop());
+    cameraStream=null;
+  }
+  cameraVideo.srcObject=null;
+  cameraBox.classList.remove("active");
+  cameraCapture.disabled=true;
+  cameraStop.disabled=true;
+  cameraStart.disabled=false;
+}
+
+async function captureCamera(){
+  if(!cameraStream)return;
+  const w=cameraVideo.videoWidth||1280;
+  const h=cameraVideo.videoHeight||720;
+  cameraCanvas.width=w;
+  cameraCanvas.height=h;
+  const ctx=cameraCanvas.getContext("2d");
+  ctx.translate(w,0);
+  ctx.scale(-1,1);
+  ctx.drawImage(cameraVideo,0,0,w,h);
+  cameraCanvas.toBlob(async blob=>{
+    if(!blob){
+      setSelfieStatus("No se pudo capturar la imagen.","selfieStatus error");
+      return;
+    }
+    selfieFile=new File([blob],"nexus-selfie.jpg",{type:"image/jpeg"});
+    selfie.value="";
+    showPreview(URL.createObjectURL(blob));
+    stopCamera();
+    await validateSelfieFile(selfieFile);
+  },"image/jpeg",0.9);
+}
+
+selfie.addEventListener("change",async()=>{
+  selfieFile=selfie.files?.[0]||null;
+  if(!selfieFile)return;
+  stopCamera();
+  showPreview(URL.createObjectURL(selfieFile));
+  await validateSelfieFile(selfieFile);
 });
+
+cameraStart.onclick=startCamera;
+cameraCapture.onclick=captureCamera;
+cameraStop.onclick=stopCamera;
+
+
+const engine={
+ state:$("engineState"), ring:$("scoreRing"), number:$("scoreNumber"), title:$("scoreTitle"),
+ sub:$("scoreSub"), findings:$("findings"), coverage:$("coverageBar"), coverageText:$("coverageText"),
+ items:{identity:$("vIdentity"),contact:$("vContact"),location:$("vLocation"),face:$("vFace"),platform:$("vPlatform"),integrity:$("vIntegrity")}
+};
+function setCheck(key,state,text){
+ const el=engine.items[key]; if(!el)return;
+ el.classList.remove("pass","warn","fail");
+ if(state)el.classList.add(state);
+ const span=el.querySelector("span"); if(span)span.textContent=text;
+ const icon=el.querySelector(".vIcon");
+ if(icon)icon.textContent=state==="pass"?"✓":state==="warn"?"!":state==="fail"?"×":"•";
+}
+function setEngineScore(score,title,sub){
+ engine.number.textContent=score;
+ engine.ring.style.background=`conic-gradient(#8b5cf6 ${score*3.6}deg,#242d3b ${score*3.6}deg)`;
+ engine.title.textContent=title;engine.sub.textContent=sub;
+}
+function engineFinding(text,ok=true){
+ engine.findings.innerHTML=`<div class="finding"><b style="background:${ok?'#35d399':'#ffbf69'};box-shadow:0 0 7px ${ok?'#35d399':'#ffbf69'}"></b>${text}</div>`;
+}
+function runClientEngine(){
+ engine.state.textContent="ANALYZING";engine.state.className="engineState running";
+ let score=0, total=0;
+ const add=(key,ok,weight,passText,failText)=>{total+=weight;if(ok){score+=weight;setCheck(key,"pass",passText)}else setCheck(key,"fail",failText)};
+ const first=fields.first.value.trim(),last=fields.last.value.trim(),email=fields.email.value.trim(),phone=fields.phone.value.trim(),state=fields.state.value,city=fields.city.value.trim();
+ add("identity",/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' -]{1,39}$/.test(first)&&/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' -]{1,39}$/.test(last)&&first.toLowerCase()!==last.toLowerCase(),20,"Name structure passed","Review name structure");
+ add("contact",/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)&&phone.replace(/\D/g,"").length>=10,20,"Email & phone passed","Review contact data");
+ add("location",fields.country.value==="United States"&&US_STATE_SET.has(state)&&/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' .-]{1,49}$/.test(city),15,"US location passed","Review location");
+ add("face",!!selfieResult?.ok,20,"Single face detected","Face check required");
+ add("platform",["uber","doordash","lyft","amazon","grubhub"].includes(service),10,"Platform recognized","Platform not recognized");
+ add("integrity",new Set([first.toLowerCase(),last.toLowerCase(),email.toLowerCase(),city.toLowerCase()]).size===4,15,"Consistency passed","Possible repeated data");
+ const pct=Math.round(score/total*100);
+ engine.coverage.style.width=pct+"%";engine.coverageText.textContent=pct+"%";
+ setEngineScore(pct,pct>=90?"Profile ready":pct>=70?"Minor review required":"Review required",pct>=90?"All client-side checks passed.":pct>=70?"Some fields should be reviewed.":"Resolve the highlighted checks before continuing.");
+ engineFinding(pct>=90?"No blocking issues detected.":pct>=70?"Review highlighted information before continuing.":"Blocking validation issues detected.",pct>=90);
+ engine.state.textContent=pct>=90?"READY":pct>=70?"REVIEW":"CHECK";
+ engine.state.className="engineState "+(pct>=90?"pass":"review");
+ return pct>=90;
+}
+const US_STATE_SET=new Set(["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"]);
 
 async function submit(){
 $("status").className="status";$("status").textContent="";
@@ -264,7 +431,8 @@ if(!selfieResult?.ok){
   return;
 }
 if(!tg?.initData){$("warning").style.display="block";$("status").className="status error";$("status").textContent="Abre NEXUS desde Telegram para continuar.";return;}
-if(!validate()){$("status").className="status error";if(!$("status").textContent)$("status").textContent="Revisa los campos marcados antes de continuar.";return;}
+if(!validate()){$("status").className="status error";if(!$("status").textContent)$("status").textContent="Revisa los campos marcados antes de continuar.";runClientEngine();return;}
+if(!runClientEngine()){ $("status").className="status error"; $("status").textContent="El motor encontró elementos que deben revisarse."; return; }
 $("c1").textContent="OK";$("c2").textContent="OK";$("c3").textContent="OK";
 $("continue").disabled=true;$("continue").textContent="VALIDANDO…";$("status").textContent="NEXUS está validando la información…";
 const payload={service,first_name:fields.first.value.trim(),last_name:fields.last.value.trim(),email:fields.email.value.trim(),phone:fields.phone.value.trim(),country:"United States",state:fields.state.value,city:fields.city.value.trim(),
@@ -280,9 +448,164 @@ $("officialBtn").onclick=()=>location.href=urls[service];
 }catch(e){$("status").className="status error";$("status").textContent=e.message;$("continue").disabled=false;$("continue").textContent="VALIDAR Y CONTINUAR";}
 }
 $("continue").onclick=submit;
-Object.values(fields).forEach(el=>{if(el.tagName==="INPUT"&&el.id!=="country")el.addEventListener("blur",validate);if(el.tagName==="SELECT")el.addEventListener("change",validate);});
+Object.values(fields).forEach(el=>{
+  if(el.tagName==="INPUT"&&el.id!=="country"){
+    el.addEventListener("blur",validate);
+    el.addEventListener("input",()=>{ if(fields.first.value||fields.last.value||fields.email.value||fields.phone.value||fields.city.value) runClientEngine(); });
+  }
+  if(el.tagName==="SELECT")el.addEventListener("change",()=>{validate();runClientEngine();});
+});
+selfie.addEventListener("change",()=>setTimeout(runClientEngine,250));
 if(!tg)$("warning").style.display="block";
 })();
 </script>
+
+<!-- NEXUS 7.1 DOCUMENT CREATION / PLATFORM REGISTRATION OVERLAY -->
+<div id="creationOverlay" class="creation-overlay" aria-hidden="true">
+  <div class="creation-backdrop"></div>
+  <section class="creation-panel" role="dialog" aria-modal="true" aria-labelledby="creationTitle">
+    <div class="creation-topline">
+      <div class="creation-chip"><span class="chip-dot"></span> NEXUS AUTOMATION CORE</div>
+      <div class="creation-secure">SECURE SESSION</div>
+    </div>
+
+    <div class="creation-core">
+      <div class="creation-orb">
+        <div class="orb-ring r1"></div>
+        <div class="orb-ring r2"></div>
+        <div class="orb-ring r3"></div>
+        <div class="orb-core">
+          <div class="orb-icon">✦</div>
+        </div>
+        <div class="orb-scan"></div>
+      </div>
+
+      <div class="creation-copy">
+        <div class="creation-eyebrow">PROCESS INITIATED</div>
+        <h2 id="creationTitle">Preparing your registration</h2>
+        <p id="creationSubtitle">Generating the registration document from the information you provided.</p>
+      </div>
+    </div>
+
+    <div class="creation-target">
+      <div class="target-label">SELECTED PLATFORM</div>
+      <div class="target-main">
+        <span id="creationPlatformIcon" class="target-icon">◎</span>
+        <span id="creationPlatformName">Platform</span>
+        <span class="target-status">READY</span>
+      </div>
+    </div>
+
+    <div class="creation-progress-wrap">
+      <div class="creation-progress-head">
+        <span id="creationStep">Initializing secure workflow</span>
+        <strong id="creationPercent">0%</strong>
+      </div>
+      <div class="creation-progress">
+        <div id="creationProgressBar"></div>
+      </div>
+    </div>
+
+    <div class="creation-stages">
+      <div class="creation-stage active" data-stage="0">
+        <span class="stage-node">01</span>
+        <div><b>Data synthesis</b><small>Structuring supplied information</small></div>
+      </div>
+      <div class="creation-stage" data-stage="1">
+        <span class="stage-node">02</span>
+        <div><b>Document creation</b><small>Preparing the registration package</small></div>
+      </div>
+      <div class="creation-stage" data-stage="2">
+        <span class="stage-node">03</span>
+        <div><b>Platform handoff</b><small>Preparing the official registration flow</small></div>
+      </div>
+    </div>
+
+    <div class="creation-notice">
+      <span>◈</span>
+      <span>The selected platform's official registration and verification requirements still apply.</span>
+    </div>
+
+    <button id="creationContinue" class="creation-continue" type="button" hidden>
+      CONTINUE TO OFFICIAL REGISTRATION <span>→</span>
+    </button>
+  </section>
+</div>
+
+<style>
+.creation-overlay{
+  position:fixed; inset:0; z-index:99999; display:none; align-items:center; justify-content:center;
+  font-family:inherit; color:#eef2ff;
+}
+.creation-overlay.show{display:flex}
+.creation-backdrop{
+  position:absolute; inset:0; background:
+    radial-gradient(circle at 50% 35%,rgba(119,73,255,.22),transparent 32%),
+    radial-gradient(circle at 20% 80%,rgba(0,215,255,.10),transparent 30%),
+    rgba(4,5,15,.88); backdrop-filter:blur(18px);
+}
+.creation-panel{
+  position:relative; width:min(720px,calc(100% - 28px)); max-height:calc(100vh - 28px);
+  overflow:auto; padding:26px; border:1px solid rgba(159,125,255,.35); border-radius:26px;
+  background:linear-gradient(145deg,rgba(17,19,42,.96),rgba(8,10,25,.98));
+  box-shadow:0 30px 100px rgba(0,0,0,.65),0 0 80px rgba(118,77,255,.14),inset 0 1px rgba(255,255,255,.08);
+}
+.creation-panel:before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:26px;
+  background:linear-gradient(120deg,transparent 20%,rgba(167,130,255,.08) 50%,transparent 80%);
+  animation:creationSweep 3.8s linear infinite;
+}
+@keyframes creationSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.creation-topline,.creation-progress-head,.target-main{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.creation-chip,.creation-secure,.target-status{
+  font-size:10px; letter-spacing:.14em; font-weight:800; padding:7px 10px; border-radius:999px;
+}
+.creation-chip{background:rgba(120,82,255,.12);border:1px solid rgba(145,112,255,.25)}
+.chip-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9d7cff;box-shadow:0 0 12px #9d7cff;margin-right:7px;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.creation-secure{color:#93f7d4;background:rgba(50,225,163,.07);border:1px solid rgba(50,225,163,.2)}
+.creation-core{display:flex;align-items:center;gap:25px;margin:34px 0 25px}
+.creation-orb{position:relative;width:128px;height:128px;flex:0 0 128px;display:grid;place-items:center}
+.orb-core{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#b99aff,#6842dc 55%,#24134e);
+  box-shadow:0 0 35px rgba(135,88,255,.8),0 0 90px rgba(103,65,255,.25)}
+.orb-icon{font-size:27px;text-shadow:0 0 15px #fff}
+.orb-ring{position:absolute;inset:5px;border:1px solid rgba(158,125,255,.35);border-radius:50%}
+.r1{animation:spin 5s linear infinite}.r2{inset:17px;border-style:dashed;animation:spin 8s linear reverse infinite}.r3{inset:29px;border-color:rgba(0,214,255,.4);animation:spin 3.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orb-scan{position:absolute;width:100%;height:2px;background:linear-gradient(90deg,transparent,#bca5ff,transparent);filter:drop-shadow(0 0 8px #9d7cff);animation:scan 2s ease-in-out infinite}
+@keyframes scan{0%,100%{transform:translateY(-52px);opacity:.15}50%{transform:translateY(52px);opacity:1}}
+.creation-eyebrow{font-size:10px;letter-spacing:.22em;color:#a88cff;font-weight:800;margin-bottom:8px}
+.creation-copy h2{font-size:clamp(22px,4vw,34px);margin:0 0 8px}
+.creation-copy p{margin:0;color:#9ca5c4;line-height:1.55}
+.creation-target{padding:16px 17px;border:1px solid rgba(146,124,210,.2);border-radius:17px;background:rgba(255,255,255,.025)}
+.target-label{font-size:9px;letter-spacing:.18em;color:#737c9e;margin-bottom:8px}
+.target-main{justify-content:flex-start}
+.target-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(128,93,255,.14);font-size:17px}
+#creationPlatformName{font-weight:800;flex:1}
+.target-status{color:#93f7d4;background:rgba(50,225,163,.07)}
+.creation-progress-wrap{margin:22px 0}
+.creation-progress{height:7px;border-radius:99px;background:#171a31;overflow:hidden;border:1px solid rgba(255,255,255,.05)}
+#creationProgressBar{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#7451ff,#ae8bff,#48e4ff);box-shadow:0 0 18px rgba(145,105,255,.65);transition:width .35s ease}
+.creation-progress-head{font-size:11px;color:#7f89aa;margin-bottom:9px}
+.creation-progress-head strong{color:#d9d4ff}
+.creation-stages{display:grid;gap:9px}
+.creation-stage{display:flex;align-items:center;gap:12px;padding:12px;border-radius:15px;border:1px solid transparent;opacity:.42;transition:.3s}
+.creation-stage.active{opacity:1;background:rgba(120,80,255,.07);border-color:rgba(142,105,255,.18)}
+.creation-stage.done{opacity:.9}
+.stage-node{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:#15182c;color:#777f9d;font-size:9px;font-weight:900}
+.creation-stage.active .stage-node,.creation-stage.done .stage-node{background:rgba(130,91,255,.18);color:#bda9ff}
+.creation-stage b{font-size:12px}.creation-stage small{display:block;color:#737c9c;font-size:10px;margin-top:2px}
+.creation-notice{display:flex;gap:9px;margin-top:18px;padding:12px 13px;border-radius:13px;background:rgba(255,255,255,.025);color:#7f89a8;font-size:10px;line-height:1.45}
+.creation-notice span:first-child{color:#a98cff}
+.creation-continue{width:100%;margin-top:16px;border:0;border-radius:14px;padding:14px 16px;font-weight:900;letter-spacing:.08em;color:white;background:linear-gradient(100deg,#6540dc,#8d62ff);box-shadow:0 10px 30px rgba(103,65,220,.3);cursor:pointer}
+@media(max-width:560px){
+  .creation-panel{padding:19px;border-radius:21px}
+  .creation-core{gap:15px}.creation-orb{width:92px;height:92px;flex-basis:92px}
+  .orb-core{width:48px;height:48px}.creation-copy h2{font-size:23px}
+  .creation-secure{display:none}
+}
+</style>
+
 </body>
 </html>

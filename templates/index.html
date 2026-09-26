@@ -3,6 +3,58 @@
 <head>
 <meta charset="utf-8">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script type="module">
+  import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs";
+
+  window.NEXUSFace = {
+    detector: null,
+    ready: false,
+    async init() {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+        );
+        this.detector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
+          },
+          runningMode: "IMAGE",
+          minDetectionConfidence: 0.55
+        });
+        this.ready = true;
+      } catch (e) {
+        console.error("NEXUS face detector init failed", e);
+        this.ready = false;
+      }
+    },
+    async detect(file) {
+      if (!this.ready || !this.detector) {
+        throw new Error("El detector facial todavía se está preparando. Intenta nuevamente en unos segundos.");
+      }
+      const url = URL.createObjectURL(file);
+      try {
+        const img = new Image();
+        img.src = url;
+        await img.decode();
+        if (img.width < 240 || img.height < 240) {
+          return { ok:false, count:0, message:"La imagen es demasiado pequeña. Usa una foto de al menos 240 × 240 px." };
+        }
+        const result = this.detector.detect(img);
+        const count = result?.detections?.length || 0;
+        if (count === 0) return { ok:false, count:0, message:"No se detectó una cara. Usa una selfie clara mirando hacia la cámara." };
+        if (count > 1) return { ok:false, count, message:"Se detectaron varias caras. La selfie debe mostrar una sola persona." };
+        const box = result.detections[0].boundingBox;
+        const areaRatio = (box?.width || 0) * (box?.height || 0) / (img.width * img.height);
+        if (areaRatio < 0.04) return { ok:false, count:1, message:"La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto." };
+        return { ok:true, count:1, message:"Cara detectada correctamente." };
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+  };
+  window.NEXUSFace.init();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ProAccount — NEXUS AI</title>
 <style>
@@ -24,6 +76,17 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 .result{text-align:center;padding:14px 2px}.check{width:54px;height:54px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:#10241e;border:1px solid #2b9d78;color:var(--green);font-size:27px;box-shadow:0 0 30px #35d39922}.result h2{font-size:20px;margin:0 0 6px}.result p{color:var(--muted);font-size:12px;line-height:1.5}.official{font-size:10px;color:#8791a0;line-height:1.5;margin:10px}
 .advanced{margin-top:12px;border:1px solid #171e29;border-radius:15px;background:#0a0e14}.advanced summary{padding:12px;color:#788394;font-size:10px;cursor:pointer;list-style:none}.advanced summary::-webkit-details-marker{display:none}.advanced summary:after{content:"＋";float:right}.advanced[open] summary:after{content:"−"}.details{padding:0 12px 12px;color:#778293;font-size:10px;line-height:1.6}.hidden{display:none!important}.warning{display:none;padding:10px;margin-top:10px;border:1px solid #5b2730;border-radius:11px;background:#190d11;color:#ff9aaa;font-size:10px;text-align:center}
 @media(max-width:430px){.platforms{grid-template-columns:repeat(3,1fr)}.row{grid-template-columns:1fr}.platform strong{font-size:9px}}
+
+.selfieCard{border:1px solid #202835;border-radius:15px;background:#090d13;padding:12px}
+.selfieHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.selfieTitle{font-size:11px;font-weight:800}.selfieHint{font-size:8px;color:#6f7a8c}
+.selfieInput{position:relative;border:1px dashed #313b4b;border-radius:13px;min-height:112px;display:grid;place-items:center;text-align:center;overflow:hidden;background:#080c12;cursor:pointer}
+.selfieInput input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.selfiePlaceholder{color:#7e899a;font-size:10px;line-height:1.5;padding:15px}
+.selfieIcon{font-size:25px;margin-bottom:5px}
+.selfiePreview{display:none;width:100%;height:150px;object-fit:cover;border-radius:10px}
+.selfieStatus{margin-top:8px;min-height:17px;font-size:9px;color:#7e899a}
+.selfieStatus.ok{color:#35d399}.selfieStatus.error{color:#ff667d}.selfieLoading{color:#b39cff}
 </style>
 </head>
 <body>
@@ -69,6 +132,24 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
   <div class="field"><input id="city" placeholder="Ciudad" autocomplete="address-level2"><div class="hint"></div></div>
  </div>
 
+ <div class="sectionLabel"><span>Foto / selfie</span><span class="aiBadge">FACE CHECK</span></div>
+
+ <div class="selfieCard">
+  <div class="selfieHead">
+   <div class="selfieTitle">Una sola cara visible</div>
+   <div class="selfieHint">VALIDACIÓN LOCAL</div>
+  </div>
+  <label class="selfieInput" id="selfieDrop">
+   <input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
+   <div class="selfiePlaceholder" id="selfiePlaceholder">
+    <div class="selfieIcon">◎</div>
+    Toca para tomar una selfie<br>o seleccionar una foto
+   </div>
+   <img id="selfiePreview" class="selfiePreview" alt="Vista previa de selfie">
+  </label>
+  <div id="selfieStatus" class="selfieStatus">La foto se analiza en este dispositivo para comprobar que contiene una sola cara.</div>
+ </div>
+
  <button class="cta" id="continue" type="button">VALIDAR Y CONTINUAR</button>
  <div id="status" class="status"></div>
  <div id="warning" class="warning">Abre NEXUS desde Telegram para validar tu sesión.</div>
@@ -88,7 +169,7 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 </div>
 </section>
 
-<details class="advanced"><summary>Detalles avanzados</summary><div class="details">NEXUS valida formato, estructura, consistencia de nombres, correo, teléfono, estado y ciudad. La validación local no sustituye la verificación oficial de identidad de cada plataforma.</div></details>
+<details class="advanced"><summary>Detalles avanzados</summary><div class="details">NEXUS valida formato, estructura, consistencia de nombres, correo, teléfono, estado, ciudad y que la foto seleccionada contenga una sola cara detectable. La imagen se analiza localmente y no se envía al backend en este flujo. Esta comprobación no sustituye la verificación oficial de identidad.</div></details>
 </div>
 
 <script>
@@ -97,6 +178,8 @@ const tg=window.Telegram?.WebApp||null;if(tg){tg.ready();tg.expand();tg.setHeade
 let service="uber";
 const $=id=>document.getElementById(id);
 const fields={first:$("first"),last:$("last"),email:$("email"),phone:$("phone"),country:$("country"),state:$("state"),city:$("city")};
+const selfie=$("selfie"), selfiePreview=$("selfiePreview"), selfiePlaceholder=$("selfiePlaceholder"), selfieStatus=$("selfieStatus");
+let selfieFile=null, selfieResult=null;
 
 const states=[
 ["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["FL","Florida"],["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"],["DC","District of Columbia"]
@@ -126,13 +209,67 @@ fields.first.value=first;fields.last.value=last;fields.city.value=city;
 return good;
 }
 
+
+selfie.addEventListener("change", async ()=>{
+  selfieFile = selfie.files?.[0] || null;
+  selfieResult = null;
+  selfiePreview.style.display = "none";
+  selfiePlaceholder.style.display = "block";
+  selfieStatus.className = "selfieStatus";
+  if(!selfieFile){ selfieStatus.textContent="La foto es obligatoria."; return; }
+
+  const allowed=["image/jpeg","image/png","image/webp"];
+  if(!allowed.includes(selfieFile.type)){
+    selfie.value="";
+    selfieFile=null;
+    selfieStatus.className="selfieStatus error";
+    selfieStatus.textContent="Formato no permitido. Usa JPG, PNG o WEBP.";
+    return;
+  }
+  if(selfieFile.size > 8*1024*1024){
+    selfie.value="";
+    selfieFile=null;
+    selfieStatus.className="selfieStatus error";
+    selfieStatus.textContent="La imagen supera 8 MB.";
+    return;
+  }
+
+  selfiePreview.src=URL.createObjectURL(selfieFile);
+  selfiePreview.style.display="block";
+  selfiePlaceholder.style.display="none";
+  selfieStatus.className="selfieStatus selfieLoading";
+  selfieStatus.textContent="Analizando la imagen…";
+
+  try{
+    selfieResult=await window.NEXUSFace.detect(selfieFile);
+    selfieStatus.className="selfieStatus "+(selfieResult.ok?"ok":"error");
+    selfieStatus.textContent=selfieResult.message;
+  }catch(e){
+    selfieResult={ok:false,count:0};
+    selfieStatus.className="selfieStatus error";
+    selfieStatus.textContent=e.message;
+  }
+});
+
 async function submit(){
 $("status").className="status";$("status").textContent="";
+if(!selfieFile){
+  selfieStatus.className="selfieStatus error";
+  selfieStatus.textContent="Agrega una foto o selfie para continuar.";
+  return;
+}
+if(!selfieResult?.ok){
+  selfieStatus.className="selfieStatus error";
+  selfieStatus.textContent=selfieResult?.message || "La foto debe contener una sola cara.";
+  return;
+}
 if(!tg?.initData){$("warning").style.display="block";$("status").className="status error";$("status").textContent="Abre NEXUS desde Telegram para continuar.";return;}
 if(!validate()){$("status").className="status error";if(!$("status").textContent)$("status").textContent="Revisa los campos marcados antes de continuar.";return;}
 $("c1").textContent="OK";$("c2").textContent="OK";$("c3").textContent="OK";
 $("continue").disabled=true;$("continue").textContent="VALIDANDO…";$("status").textContent="NEXUS está validando la información…";
-const payload={service,first_name:fields.first.value.trim(),last_name:fields.last.value.trim(),email:fields.email.value.trim(),phone:fields.phone.value.trim(),country:"United States",state:fields.state.value,city:fields.city.value.trim()};
+const payload={service,first_name:fields.first.value.trim(),last_name:fields.last.value.trim(),email:fields.email.value.trim(),phone:fields.phone.value.trim(),country:"United States",state:fields.state.value,city:fields.city.value.trim(),
+selfie_face_check:"single_face_detected"
+};
 try{
 const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData},body:JSON.stringify(payload)});
 const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible procesar la información.");

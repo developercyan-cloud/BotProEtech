@@ -22,7 +22,7 @@ WEBAPP_URL = os.environ.get("WEBAPP_URL", "").strip()
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "").strip()
 DATABASE = os.environ.get("DATABASE_PATH", "data.db")
 PORT = int(os.environ.get("PORT", "8080"))
-MAX_BODY = int(os.environ.get("MAX_BODY_BYTES", "1048576"))
+MAX_BODY = int(os.environ.get("MAX_BODY_BYTES", str(12 * 1024 * 1024)))
 
 if not BOT_TOKEN:
     raise RuntimeError("Missing TELEGRAM_BOT_TOKEN")
@@ -244,6 +244,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def index():
     return render_template("index.html")
 
+@app.errorhandler(413)
+def request_too_large(error):
+    return jsonify({"error": "La imagen o solicitud supera el límite permitido. Usa una imagen de menos de 8 MB."}), 413
+
 @app.get("/health")
 def health():
     try:
@@ -311,8 +315,9 @@ def face_check():
         if area < 0.04:
             return jsonify({"ok": False, "count": 1, "message": "La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto."})
         return jsonify({"ok": True, "count": 1, "message": "Cara detectada correctamente.", "engine": "server_local_face_quality", "stored": False})
-    except Exception:
-        return jsonify({"error": "No fue posible analizar la imagen."}), 400
+    except Exception as exc:
+        app.logger.exception("Face analysis failed")
+        return jsonify({"error": "No fue posible analizar la imagen.", "detail": str(exc)[:240]}), 500
 
 @app.post("/api/register")
 def register():

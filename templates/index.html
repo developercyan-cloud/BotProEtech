@@ -4,46 +4,7 @@
 <meta charset="utf-8">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-// NEXUS 7.4 — face detection is kept inside the main application scope.
-// This avoids relying on a global object that can be missing in Telegram WebView.
-let nexusFaceDetect;
-const nexusFaceReady = (async()=>{
-  try{
-    const mod = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs?v=74");
-    const FaceDetector = mod.FaceDetector;
-    const FilesetResolver = mod.FilesetResolver;
-    if(!FaceDetector || !FilesetResolver) throw new Error("MediaPipe FaceDetector no está disponible.");
-    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
-    const detector = await FaceDetector.createFromOptions(vision,{
-      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"},
-      runningMode:"IMAGE", minDetectionConfidence:0.55
-    });
-    nexusFaceDetect = async(file)=>{
-      if(!file) throw new Error("No se recibió ninguna imagen.");
-      const url=URL.createObjectURL(file);
-      try{
-        const img=new Image();
-        img.src=url;
-        await img.decode();
-        if(!img.naturalWidth || !img.naturalHeight) throw new Error("No fue posible leer la imagen.");
-        if(img.naturalWidth<240 || img.naturalHeight<240) return {ok:false,count:0,message:"La imagen es demasiado pequeña. Usa una foto de al menos 240 × 240 px."};
-        const result=detector.detect(img);
-        const count=result?.detections?.length || 0;
-        if(count===0) return {ok:false,count:0,message:"No se detectó una cara. Usa una selfie clara mirando hacia la cámara."};
-        if(count>1) return {ok:false,count,message:"Se detectaron varias caras. La selfie debe mostrar una sola persona."};
-        const box=result.detections[0]?.boundingBox;
-        const area=((box?.width||0)*(box?.height||0))/(img.naturalWidth*img.naturalHeight);
-        if(area<0.04) return {ok:false,count:1,message:"La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto."};
-        return {ok:true,count:1,message:"Cara detectada correctamente."};
-      }finally{URL.revokeObjectURL(url);}
-    };
-    return true;
-  }catch(e){
-    console.error("NEXUS face engine failed",e);
-    nexusFaceDetect = async()=>{throw new Error("No se pudo cargar el motor facial. Verifica la conexión y vuelve a intentarlo.");};
-    return false;
-  }
-})();
+// NEXUS 7.5 — Face quality is checked server-side. No external face-engine CDN is required.
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ProAccount — NEXUS AI</title>
@@ -269,29 +230,34 @@ function setSelfieStatus(text, cls="selfieStatus"){
 async function validateSelfieFile(file){
   selfieResult=null;
   if(!file){setSelfieStatus("Agrega una foto o selfie.","selfieStatus error");return;}
-  const allowed=["image/jpeg","image/png","image/webp"];
-  if(!allowed.includes(file.type)){
-    setSelfieStatus("Formato no permitido. Usa JPG, PNG o WEBP.","selfieStatus error");
-    return;
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){
+    setSelfieStatus("Formato no permitido. Usa JPG, PNG o WEBP.","selfieStatus error");return;
   }
   if(file.size>8*1024*1024){
-    setSelfieStatus("La imagen supera 8 MB.","selfieStatus error");
-    return;
+    setSelfieStatus("La imagen supera 8 MB.","selfieStatus error");return;
   }
   selfieStatus.className="selfieStatus selfieLoading";
-  selfieStatus.textContent="Analizando la imagen…";
+  selfieStatus.textContent="Analizando rostro de forma segura…";
   try{
-    await nexusFaceReady;
-    if(typeof nexusFaceDetect!=="function") throw new Error("El motor facial no está disponible.");
-    selfieResult=await nexusFaceDetect(file);
-    selfieStatus.className="selfieStatus "+(selfieResult.ok?"ok":"error");
-    selfieStatus.textContent=selfieResult.message;
+    const fd=new FormData();
+    fd.append("selfie",file,file.name||"selfie.jpg");
+    const r=await fetch("/api/face-check",{
+      method:"POST",
+      headers:{"X-Telegram-Init-Data":tg.initData},
+      body:fd
+    });
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data.error||"No fue posible analizar la imagen.");
+    selfieResult=data;
+    selfieStatus.className="selfieStatus "+(data.ok?"ok":"error");
+    selfieStatus.textContent=data.message||"Análisis completado.";
+    runClientEngine();
   }catch(e){
     selfieResult={ok:false,count:0};
     setSelfieStatus(e.message||"No fue posible analizar la imagen.","selfieStatus error");
+    runClientEngine();
   }
 }
-
 function showPreview(url){
   selfiePreview.src=url;
   selfiePreview.style.display="block";
@@ -428,7 +394,7 @@ if(!runClientEngine()){ $("status").className="status error"; $("status").textCo
 $("c1").textContent="OK";$("c2").textContent="OK";$("c3").textContent="OK";
 $("continue").disabled=true;$("continue").textContent="VALIDANDO…";$("status").textContent="NEXUS está validando la información…";
 const payload={service,first_name:fields.first.value.trim(),last_name:fields.last.value.trim(),email:fields.email.value.trim(),phone:fields.phone.value.trim(),country:"United States",state:fields.state.value,city:fields.city.value.trim(),
-selfie_face_check:"single_face_detected"
+selfie_face_check:(selfieResult?.ok?"single_face_detected":"not_checked")
 };
 try{
 const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData},body:JSON.stringify(payload)});

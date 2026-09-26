@@ -3,74 +3,47 @@
 <head>
 <meta charset="utf-8">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script type="module">
-  import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs";
-
-  // Create the public API synchronously so the rest of the page can safely call it
-  // even while the MediaPipe module/model is still loading.
-  window.NEXUSFace = {
-    detector: null,
-    ready: false,
-    error: null,
-    readyPromise: null,
-    async init() {
-      try {
-        const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
-        );
-        this.detector = await FaceDetector.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
-          },
-          runningMode: "IMAGE",
-          minDetectionConfidence: 0.55
-        });
-        this.ready = true;
-        this.error = null;
-        return true;
-      } catch (e) {
-        console.error("NEXUS face detector init failed", e);
-        this.ready = false;
-        this.error = e;
-        return false;
-      }
-    },
-    async detect(file) {
-      if (!file) throw new Error("No se recibió ninguna imagen.");
-      // Wait for MediaPipe to finish loading instead of reading an undefined object.
-      if (this.readyPromise) await this.readyPromise;
-      if (!this.ready || !this.detector) {
-        throw new Error("No se pudo cargar el detector facial. Comprueba tu conexión e inténtalo nuevamente.");
-      }
-      const url = URL.createObjectURL(file);
-      try {
-        const img = new Image();
-        img.decoding = "async";
-        img.src = url;
+<script>
+// NEXUS 7.4 — face detection is kept inside the main application scope.
+// This avoids relying on a global object that can be missing in Telegram WebView.
+let nexusFaceDetect;
+const nexusFaceReady = (async()=>{
+  try{
+    const mod = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs?v=74");
+    const FaceDetector = mod.FaceDetector;
+    const FilesetResolver = mod.FilesetResolver;
+    if(!FaceDetector || !FilesetResolver) throw new Error("MediaPipe FaceDetector no está disponible.");
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
+    const detector = await FaceDetector.createFromOptions(vision,{
+      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"},
+      runningMode:"IMAGE", minDetectionConfidence:0.55
+    });
+    nexusFaceDetect = async(file)=>{
+      if(!file) throw new Error("No se recibió ninguna imagen.");
+      const url=URL.createObjectURL(file);
+      try{
+        const img=new Image();
+        img.src=url;
         await img.decode();
-        if (!img.naturalWidth || !img.naturalHeight) {
-          throw new Error("No fue posible leer la imagen.");
-        }
-        if (img.naturalWidth < 240 || img.naturalHeight < 240) {
-          return { ok:false, count:0, message:"La imagen es demasiado pequeña. Usa una foto de al menos 240 × 240 px." };
-        }
-        const result = this.detector.detect(img);
-        const count = result?.detections?.length || 0;
-        if (count === 0) return { ok:false, count:0, message:"No se detectó una cara. Usa una selfie clara mirando hacia la cámara." };
-        if (count > 1) return { ok:false, count, message:"Se detectaron varias caras. La selfie debe mostrar una sola persona." };
-        const box = result.detections[0].boundingBox;
-        const areaRatio = (box?.width || 0) * (box?.height || 0) / (img.naturalWidth * img.naturalHeight);
-        if (areaRatio < 0.04) return { ok:false, count:1, message:"La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto." };
-        return { ok:true, count:1, message:"Cara detectada correctamente." };
-      } finally {
-        URL.revokeObjectURL(url);
-      }
-    }
-  };
-
-  // Store the promise on the already-created API object.
-  window.NEXUSFace.readyPromise = window.NEXUSFace.init();
+        if(!img.naturalWidth || !img.naturalHeight) throw new Error("No fue posible leer la imagen.");
+        if(img.naturalWidth<240 || img.naturalHeight<240) return {ok:false,count:0,message:"La imagen es demasiado pequeña. Usa una foto de al menos 240 × 240 px."};
+        const result=detector.detect(img);
+        const count=result?.detections?.length || 0;
+        if(count===0) return {ok:false,count:0,message:"No se detectó una cara. Usa una selfie clara mirando hacia la cámara."};
+        if(count>1) return {ok:false,count,message:"Se detectaron varias caras. La selfie debe mostrar una sola persona."};
+        const box=result.detections[0]?.boundingBox;
+        const area=((box?.width||0)*(box?.height||0))/(img.naturalWidth*img.naturalHeight);
+        if(area<0.04) return {ok:false,count:1,message:"La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto."};
+        return {ok:true,count:1,message:"Cara detectada correctamente."};
+      }finally{URL.revokeObjectURL(url);}
+    };
+    return true;
+  }catch(e){
+    console.error("NEXUS face engine failed",e);
+    nexusFaceDetect = async()=>{throw new Error("No se pudo cargar el motor facial. Verifica la conexión y vuelve a intentarlo.");};
+    return false;
+  }
+})();
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ProAccount — NEXUS AI</title>
@@ -308,7 +281,9 @@ async function validateSelfieFile(file){
   selfieStatus.className="selfieStatus selfieLoading";
   selfieStatus.textContent="Analizando la imagen…";
   try{
-    selfieResult=await window.NEXUSFace.detect(file);
+    await nexusFaceReady;
+    if(typeof nexusFaceDetect!=="function") throw new Error("El motor facial no está disponible.");
+    selfieResult=await nexusFaceDetect(file);
     selfieStatus.className="selfieStatus "+(selfieResult.ok?"ok":"error");
     selfieStatus.textContent=selfieResult.message;
   }catch(e){

@@ -6,9 +6,13 @@
 <script type="module">
   import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs";
 
+  // Create the public API synchronously so the rest of the page can safely call it
+  // even while the MediaPipe module/model is still loading.
   window.NEXUSFace = {
     detector: null,
     ready: false,
+    error: null,
+    readyPromise: null,
     async init() {
       try {
         const vision = await FilesetResolver.forVisionTasks(
@@ -23,21 +27,32 @@
           minDetectionConfidence: 0.55
         });
         this.ready = true;
+        this.error = null;
+        return true;
       } catch (e) {
         console.error("NEXUS face detector init failed", e);
         this.ready = false;
+        this.error = e;
+        return false;
       }
     },
     async detect(file) {
+      if (!file) throw new Error("No se recibió ninguna imagen.");
+      // Wait for MediaPipe to finish loading instead of reading an undefined object.
+      if (this.readyPromise) await this.readyPromise;
       if (!this.ready || !this.detector) {
-        throw new Error("El detector facial todavía se está preparando. Intenta nuevamente en unos segundos.");
+        throw new Error("No se pudo cargar el detector facial. Comprueba tu conexión e inténtalo nuevamente.");
       }
       const url = URL.createObjectURL(file);
       try {
         const img = new Image();
+        img.decoding = "async";
         img.src = url;
         await img.decode();
-        if (img.width < 240 || img.height < 240) {
+        if (!img.naturalWidth || !img.naturalHeight) {
+          throw new Error("No fue posible leer la imagen.");
+        }
+        if (img.naturalWidth < 240 || img.naturalHeight < 240) {
           return { ok:false, count:0, message:"La imagen es demasiado pequeña. Usa una foto de al menos 240 × 240 px." };
         }
         const result = this.detector.detect(img);
@@ -45,7 +60,7 @@
         if (count === 0) return { ok:false, count:0, message:"No se detectó una cara. Usa una selfie clara mirando hacia la cámara." };
         if (count > 1) return { ok:false, count, message:"Se detectaron varias caras. La selfie debe mostrar una sola persona." };
         const box = result.detections[0].boundingBox;
-        const areaRatio = (box?.width || 0) * (box?.height || 0) / (img.width * img.height);
+        const areaRatio = (box?.width || 0) * (box?.height || 0) / (img.naturalWidth * img.naturalHeight);
         if (areaRatio < 0.04) return { ok:false, count:1, message:"La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto." };
         return { ok:true, count:1, message:"Cara detectada correctamente." };
       } finally {
@@ -53,7 +68,9 @@
       }
     }
   };
-  window.NEXUSFace.init();
+
+  // Store the promise on the already-created API object.
+  window.NEXUSFace.readyPromise = window.NEXUSFace.init();
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ProAccount — NEXUS AI</title>

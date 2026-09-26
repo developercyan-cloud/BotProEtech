@@ -62,9 +62,9 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 </head>
 <body>
 <div class="app">
-<header class="top"><div class="brand">PRO<span>ACCOUNT</span></div><div class="statusTop"><i class="dot"></i> NEXUS ONLINE</div></header>
+<header class="top"><div class="brand">PRO<span>ACCOUNT</span></div><div class="statusTop"><i class="dot"></i> NEXUS EN LÍNEA</div></header>
 
-<section class="hero"><div class="core"></div><div class="eyebrow">NEXUS AI · INTELLIGENT ONBOARDING</div><h1>Comencemos</h1><p>Preparación inteligente para tu registro.</p></section>
+<section class="hero"><div class="core"></div><div class="eyebrow">NEXUS AI · REGISTRO INTELIGENTE</div><h1>Comencemos</h1><p>Preparación inteligente para tu registro.</p></section>
 
 <section class="card">
 <div id="formContainer">
@@ -123,7 +123,19 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
   </div>
 
   <label class="selfieInput">
-   <input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
+   
+<div class="field-group ssn-field">
+  <label for="ssn">Número de Seguro Social (SSN)</label>
+  <div class="ssn-wrap">
+    <input id="ssn" name="ssn" type="password" inputmode="numeric" autocomplete="off"
+           maxlength="11" placeholder="•••-••-••••" aria-describedby="ssnHelp">
+    <button type="button" id="ssnToggle" class="ssn-toggle">Mostrar</button>
+  </div>
+  <div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN. Se utiliza únicamente para el proceso que corresponda.</div>
+  <div id="ssnStatus" class="ssn-status"></div>
+</div>
+
+<input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user">
    <span>O seleccionar una foto de la galería</span>
   </label>
 
@@ -138,7 +150,7 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 
  <div class="checks">
   <div class="checkItem"><strong id="c1">—</strong><span>Datos</span></div>
-  <div class="checkItem"><strong id="c2">—</strong><span>Contactoo</span></div>
+  <div class="checkItem"><strong id="c2">—</strong><span>Contactooo</span></div>
   <div class="checkItem"><strong id="c3">—</strong><span>Ubicación</span></div>
  </div>
  <div class="validationEngine">
@@ -157,7 +169,7 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
    </div>
    <div class="validationGrid">
     <div class="vCheck" id="vIdentity"><div class="vIcon">◎</div><div class="vText"><strong>Perfil</strong><span>Waiting</span></div></div>
-    <div class="vCheck" id="vContacto"><div class="vIcon">⌁</div><div class="vText"><strong>Contacto</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vContactoo"><div class="vIcon">⌁</div><div class="vText"><strong>Contactoo</strong><span>Waiting</span></div></div>
     <div class="vCheck" id="vUbicación"><div class="vIcon">⌖</div><div class="vText"><strong>Ubicación</strong><span>Waiting</span></div></div>
     <div class="vCheck" id="vFace"><div class="vIcon">◉</div><div class="vText"><strong>Foto</strong><span>Waiting</span></div></div>
     <div class="vCheck" id="vPlataforma"><div class="vIcon">◆</div><div class="vText"><strong>Plataforma</strong><span>Waiting</span></div></div>
@@ -337,7 +349,7 @@ cameraStop.onclick=stopCamera;
 const engine={
  state:$("engineState"), ring:$("scoreRing"), number:$("scoreNumber"), title:$("scoreTitle"),
  sub:$("scoreSub"), findings:$("findings"), coverage:$("coverageBar"), coverageText:$("coverageText"),
- items:{identity:$("vIdentity"),contact:$("vContacto"),location:$("vUbicación"),face:$("vFace"),platform:$("vPlataforma"),integrity:$("vInformación")}
+ items:{identity:$("vIdentity"),contact:$("vContactoo"),location:$("vUbicación"),face:$("vFace"),platform:$("vPlataforma"),integrity:$("vInformación")}
 };
 function setCheck(key,state,text){
  const el=engine.items[key]; if(!el)return;
@@ -453,7 +465,7 @@ if(!tg)$("warning").style.display="block";
     <div class="docx-platform">
       <div>
         <small>PLATAFORMA SELECCIONADA</small>
-        <strong id="docxPlataforma">Selected platform</strong>
+        <strong id="docxPlataforma">Plataforma seleccionada</strong>
       </div>
       <span id="docxPlataformaBadge">LISTO</span>
     </div>
@@ -559,7 +571,7 @@ if(!tg)$("warning").style.display="block";
     const key=forcedKey || serviceKey();
     const legacyResult=document.getElementById('result');
     if(legacyResult) legacyResult.classList.add('hidden');
-    const m=meta[key]||['Selected platform','#'];
+    const m=meta[key]||['Plataforma seleccionada','#'];
     platform.textContent=m[0];
     ready.hidden=true;
     cont.hidden=true;
@@ -575,7 +587,7 @@ if(!tg)$("warning").style.display="block";
       {p:59,t:'Generando document package',h:'Creando tu documento',s:'NEXUS AI está generando el documento y preparando la información para el registro.',ph:2},
       {p:76,t:'Revisando la información',h:'Finalizing your document',s:'Aplicando una revisión final de consistencia antes de preparar la registro en la plataforma.',ph:2},
       {p:91,t:'Preparando platform handoff',h:'Preparando registration',s:'Tu documento está siendo preparado para el proceso oficial de registro.',ph:3},
-      {p:100,t:'Documento preparado',h:'Document created',s:'Tu documento está listo para continuar con el registro oficial.',ph:3}
+      {p:100,t:'Documento preparado',h:'Documento creado',s:'Tu documento está listo para continuar con el registro oficial.',ph:3}
     ];
 
     let i=0;
@@ -588,7 +600,7 @@ if(!tg)$("warning").style.display="block";
       if(x.p===100){
         ready.hidden=false;
         cont.hidden=false;
-        document.getElementById('docxEta').textContent='LISTO FOR OFFICIAL REGISTRATION';
+        document.getElementById('docxEta').textContent='LISTO FOR REGISTRO OFICIAL';
       }else{
         document.getElementById('docxEta').textContent='PROCESANDO INFORMACIÓN...';
         setTimeout(tick,900);
@@ -614,5 +626,49 @@ if(!tg)$("warning").style.display="block";
 })();
 </script>
 
+
+<script>
+(function(){
+  const input=document.getElementById('ssn');
+  const toggle=document.getElementById('ssnToggle');
+  const status=document.getElementById('ssnStatus');
+  if(!input)return;
+
+  function digits(){return input.value.replace(/\D/g,'').slice(0,9)}
+  function format(v){
+    const d=v;
+    if(d.length<=3)return d;
+    if(d.length<=5)return d.slice(0,3)+'-'+d.slice(3);
+    return d.slice(0,3)+'-'+d.slice(3,5)+'-'+d.slice(5);
+  }
+  function check(){
+    const d=digits();
+    input.value=format(d);
+    if(!d){status.textContent='';status.className='ssn-status';return false}
+    if(d.length!==9){
+      status.textContent='El SSN debe contener 9 dígitos.';
+      status.className='ssn-status bad'; return false;
+    }
+    if(/^(\d)\1{8}$/.test(d) || d==='123456789' || d==='000000000'){
+      status.textContent='El número ingresado no tiene un formato válido.';
+      status.className='ssn-status bad'; return false;
+    }
+    status.textContent='Formato del SSN correcto. La verificación oficial requiere un servicio autorizado.';
+    status.className='ssn-status ok';
+    return true;
+  }
+  input.addEventListener('input',check);
+  toggle.addEventListener('click',()=>{
+    const show=input.type==='password';
+    input.type=show?'text':'password';
+    toggle.textContent=show?'Ocultar':'Mostrar';
+  });
+
+  // Expose only a transient validator; do not persist the SSN in localStorage.
+  window.NEXUS_SSN_VALID=check;
+})();
+</script>
+
+<div style="display:none" aria-hidden="true">La comprobación de un SSN contra registros de la Administración del Seguro Social (SSA) no se realiza mediante una consulta pública. Los servicios oficiales SSNVS/CBSV requieren autorización y condiciones específicas.</div>
 </body>
 </html>

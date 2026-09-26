@@ -399,10 +399,7 @@ selfie_face_check:(selfieResult?.ok?"single_face_detected":"not_checked")
 try{
 const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData},body:JSON.stringify(payload)});
 const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible procesar la información.");
-$("formContainer").classList.add("hidden");$("result").classList.remove("hidden");document.querySelectorAll(".step").forEach(x=>x.classList.add("active"));$("progressBar").style.width="100%";$("progressText").textContent="100%";
-$("resultText").textContent=`La información para ${service.toUpperCase()} fue recibida y revisada.`;
-const urls={uber:"https://www.uber.com/",doordash:"https://www.doordash.com/",lyft:"https://www.lyft.com/",amazon:"https://www.amazon.com/",grubhub:"https://www.grubhub.com/"};
-$("officialBtn").onclick=()=>location.href=urls[service];
+document.dispatchEvent(new CustomEvent("nexus:registration-success",{detail:{service:service}}));
 }catch(e){$("status").className="status error";$("status").textContent=e.message;$("continue").disabled=false;$("continue").textContent="VALIDAR Y CONTINUAR";}
 }
 $("continue").onclick=submit;
@@ -558,8 +555,10 @@ if(!tg)$("warning").style.display="block";
     return [...document.querySelectorAll(selectors)].some(el=>el.offsetParent!==null);
   }
 
-  function launchDocumentCreation(){
-    const key=serviceKey();
+  function launchDocumentCreation(forcedKey){
+    const key=forcedKey || serviceKey();
+    const legacyResult=document.getElementById('result');
+    if(legacyResult) legacyResult.classList.add('hidden');
     const m=meta[key]||['Selected platform','#'];
     platform.textContent=m[0];
     ready.hidden=true;
@@ -598,18 +597,15 @@ if(!tg)$("warning").style.display="block";
     setTimeout(tick,450);
   }
 
-  if(form){
-    form.addEventListener('submit',function(){
-      /*
-       * The existing submit handler remains responsible for the real API request.
-       * We intentionally wait briefly so only a successful/green submission launches
-       * the creation experience; invalid submissions retain the normal validation UI.
-       */
-      setTimeout(()=>{
-        if(!hasVisibleValidationErrors()) launchDocumentCreation();
-      },250);
-    },true);
-  }
+  /*
+   * The actual NEXUS submit function uses a button (not a native form submit),
+   * so listening to "submit" is unreliable. The backend-success path now emits
+   * this event, and ONLY that event opens the creation experience.
+   */
+  document.addEventListener('nexus:registration-success',function(ev){
+    const key=(ev.detail&&ev.detail.service)||serviceKey();
+    launchDocumentCreation(key);
+  });
 
   cont.addEventListener('click',()=>{
     const m=meta[serviceKey()];

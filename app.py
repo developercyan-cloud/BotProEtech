@@ -172,7 +172,7 @@ def run_bot():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_cmd))
-    application.run_polling(close_loop=False)
+    application.run_polling(close_loop=False, stop_signals=None)
 
 if __name__ == "__main__":
     init_db()

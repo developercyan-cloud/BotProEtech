@@ -163,6 +163,20 @@ def clean(value, max_len=120):
         return ""
     return " ".join(value.strip().split())[:max_len]
 
+
+def validation_engine(payload):
+    """Server-side deterministic quality engine. It does not identify a person."""
+    checks = {}
+    checks["profile"] = bool(NAME_RE.fullmatch(payload["first_name"]) and NAME_RE.fullmatch(payload["last_name"]))
+    checks["contact"] = bool(EMAIL_RE.fullmatch(payload["email"]) and len(re.sub(r"\D","",payload["phone"])) in (10,11))
+    checks["location"] = payload["country"] == "United States" and payload["state"] in US_STATES and bool(CITY_RE.fullmatch(payload["city"]))
+    checks["face"] = payload["face_check"] == "single_face_detected"
+    checks["platform"] = payload["service"] in SERVICES
+    checks["integrity"] = len({payload["first_name"].casefold(),payload["last_name"].casefold(),payload["email"].casefold(),payload["city"].casefold()}) == 4
+    weights={"profile":20,"contact":20,"location":15,"face":20,"platform":10,"integrity":15}
+    score=sum(weights[k] for k,v in checks.items() if v)
+    return {"score":score,"checks":checks,"status":"ready" if score>=90 else "review"}
+
 def validate_payload(data):
     if not isinstance(data, dict):
         return None, "Invalid JSON body"
@@ -271,6 +285,13 @@ def register():
     if error:
         return jsonify({"error": error}), 400
 
+    validation = validation_engine(payload)
+    if validation["status"] != "ready":
+        return jsonify({
+            "error": "Server validation requires review",
+            "validation": validation
+        }), 422
+
     with _db_lock:
         conn = db()
         created = now()
@@ -284,7 +305,7 @@ def register():
             telegram_id, username, payload["service"], payload["first_name"],
             payload["last_name"], payload["email"], payload["phone"],
             payload["country"], payload["state"], payload["city"],
-            payload["face_check"], "profile_received", 60, ref, created, created
+            payload["face_check"], "profile_received", validation["score"], ref, created, created
         ))
         reg_id = cur.lastrowid
         conn.commit()
@@ -294,16 +315,31 @@ def register():
     add_event(reg_id, "field_validation", "Server-side validation passed", "info")
     add_event(reg_id, "face_check", "Local single-face check reported as passed", "info",
               {"face_check": payload["face_check"]})
+    add_event(reg_id, "validation_engine", "Server validation engine passed", "info",
+              validation)
 
     return jsonify({
         "ok": True,
         "registration_id": reg_id,
         "passport_ref": ref,
         "status": "profile_received",
-        "readiness": 60
+        "readiness": validation["score"]
     }), 201
 
-@app.get("/api/registrations/<int:reg_id>")
+
+@app.post("/api/validate")
+def validate_api():
+    if not rate_limit("validate", 30, 60):
+        return jsonify({"error":"Too many requests"}), 429
+    valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data",""))
+    if not valid:
+        return jsonify({"error":"Invalid Telegram authentication"}), 401
+    payload, error = validate_payload(request.get_json(silent=True) or {})
+    if error:
+        return jsonify({"ok":False,"error":error}), 400
+    return jsonify({"ok":True,"validation":validation_engine(payload)})
+
+@app.get("/api/registrations/<int:reg_id>)
 def get_registration(reg_id):
     valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
     if not valid:

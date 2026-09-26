@@ -56,3 +56,6 @@ Fixed upload rejection caused by the previous 1 MB global request limit. The ser
 
 ### NEXUS 7.7 — Futuristic document creation workflow
 After the registration information passes the existing form validation and is submitted, the interface replaces the generic completion message with a cinematic NEXUS AI document-creation sequence. It includes an animated holographic document, progress stages, platform destination, integrity pass and final handoff state. The final action opens the selected platform's official registration site; it does not claim an external account has been created or approved.
+
+### NEXUS 7.8 — Submission flow fix
+The document-creation animation is now triggered by the confirmed `/api/register` success event rather than a native form-submit listener. This fixes the issue where the legacy “Validación completada” screen appeared first because the main action is a `type="button"`.

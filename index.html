@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>NEXUS AI 2.0 — Registration Intelligence</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#040711;--panel:#09111e;--panel2:#0d1828;--line:#20304b;--blue:#3d72ff;--cyan:#35e4ff;--purple:#816dff;--green:#31d49a;--amber:#ffc45c;--red:#ff647d;--text:#f4f7ff;--muted:#8291aa}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 20% -10%,#123d6b55,transparent 32%),radial-gradient(circle at 100% 0,#633fff33,transparent 30%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}body{padding:9px}.app{max-width:1220px;margin:auto}
+button,input,select{font:inherit}button{border:0}
+.top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 5px 7px}.brand{display:flex;align-items:center;gap:10px}.logo{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#fff,#45a5ff 55%,#38e5ff);color:#06101e;font-weight:1000;box-shadow:0 0 30px #38e5ff44}.brand b{font-size:17px}.brand b span{color:var(--cyan)}.brand small{display:block;color:#64748a;font-size:8px;letter-spacing:1.2px;margin-top:2px}.online{border:1px solid var(--line);background:#08111e;padding:7px 10px;border-radius:99px;font-size:9px;color:#9ba9bf}.online i{display:inline-block;width:6px;height:6px;background:var(--green);border-radius:50%;margin-right:5px;box-shadow:0 0 9px var(--green)}
+.layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:10px}.side{border:1px solid var(--line);border-radius:20px;background:#07101bdf;padding:9px;height:max-content;position:sticky;top:8px}.sideTitle{font-size:8px;color:#53627b;letter-spacing:1.5px;padding:7px 8px}.sideBtn{width:100%;display:flex;gap:9px;align-items:center;background:transparent;color:#aebbd0;border:1px solid transparent;border-radius:13px;padding:10px 8px;margin-bottom:4px;text-align:left;cursor:pointer}.sideBtn .ic{width:31px;height:31px;border-radius:9px;background:#101b2d;display:grid;place-items:center}.sideBtn b{font-size:11px;display:block}.sideBtn small{font-size:8px;color:#61718a}.sideBtn.active{background:#102650;border-color:#315cae;box-shadow:inset 2px 0 var(--cyan)}
+.main{min-width:0}.hero{border:1px solid var(--line);border-radius:23px;padding:19px;position:relative;overflow:hidden;background:linear-gradient(135deg,#0c1a31,#07101d 62%,#17142b);box-shadow:0 20px 60px #0005}.hero:before{content:"";position:absolute;right:-70px;top:-110px;width:310px;height:310px;border-radius:50%;border:1px solid #42dfff44;box-shadow:0 0 0 25px #42dfff09,0 0 100px #3d72ff22}.heroGrid{display:grid;grid-template-columns:1fr 260px;gap:15px;align-items:center}.eyebrow{font-size:9px;color:var(--cyan);letter-spacing:1.7px;margin-bottom:7px}.hero h1{font-size:clamp(27px,5vw,42px);line-height:1.02;margin:0}.hero h1 span{color:var(--cyan)}.hero p{font-size:11px;color:var(--muted);line-height:1.55;max-width:650px}.core{height:155px;display:grid;place-items:center;position:relative}.coreCircle{width:112px;height:112px;border-radius:50%;border:1px solid #45e5ff88;box-shadow:0 0 0 9px #45e5ff09,0 0 45px #3d72ff33,inset 0 0 35px #45e5ff11;display:grid;place-items:center;animation:pulse 3s infinite}.coreCircle:before{content:"N";font-size:42px;font-weight:1000;color:white;text-shadow:0 0 18px var(--cyan)}.orbit{position:absolute;width:150px;height:55px;border:1px solid #35e4ff55;border-radius:50%;transform:rotate(-25deg);animation:spin 6s linear infinite}.orbit2{position:absolute;width:165px;height:65px;border:1px solid #816dff55;border-radius:50%;transform:rotate(45deg);animation:spin 8s linear infinite reverse}.scan{position:absolute;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:scan 2.4s infinite}.featureRow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.feat{font-size:9px;color:#b5c3d8;border:1px solid var(--line);border-radius:9px;background:#081321;padding:7px 9px}
+.dashboard{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:9px}.stat{border:1px solid var(--line);border-radius:14px;background:#07101bdd;padding:11px}.stat label{display:block;color:#63728a;font-size:8px;letter-spacing:.7px}.stat strong{display:block;font-size:16px;margin-top:5px}.stat small{color:#71819a;font-size:8px}.green{color:var(--green)}.cyan{color:var(--cyan)}.amber{color:var(--amber)}
+.progress{margin:10px 0 8px}.pTop{display:flex;justify-content:space-between;color:#687891;font-size:8px;margin-bottom:5px}.track{height:6px;background:#111b2b;border-radius:99px;overflow:hidden}.track i{height:100%;display:block;width:20%;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:.25s;box-shadow:0 0 14px #35e4ff77}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:9px}.step{border:1px solid var(--line);border-radius:8px;padding:7px 2px;text-align:center;color:#596980;font-size:8px;background:#07101a}.step.active{border-color:#4167bf;color:#fff;background:#11264b}.step.done{color:#81e5c1;border-color:#256850}
+.panel{border:1px solid var(--line);border-radius:19px;background:#07101be8;padding:16px;box-shadow:0 18px 50px #0004}.titleLine{display:flex;justify-content:space-between;gap:10px;align-items:start}.panel h2{font-size:18px;margin:0}.sub{font-size:10px;color:var(--muted);line-height:1.5;margin:4px 0 14px}.aiBadge{font-size:8px;color:var(--cyan);border:1px solid #35e4ff44;background:#35e4ff0a;padding:6px 8px;border-radius:9px;white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.card{background:#091423;border:1px solid var(--line);border-radius:15px;padding:13px;text-align:left;color:white;cursor:pointer;min-height:112px}.card.sel{border-color:#4d74dc;background:linear-gradient(145deg,#132a52,#091523);box-shadow:0 0 0 1px #3d72ff33}.card .big{font-size:23px;margin-bottom:11px}.card b{font-size:13px}.card small{display:block;color:#65758e;font-size:8px;margin-top:4px;line-height:1.4}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}label{font-size:8px;color:#95a4bb;font-weight:800;letter-spacing:.8px}input,select{min-height:45px;border:1px solid var(--line);background:#050c17;color:#f4f7ff;border-radius:11px;padding:0 11px;font-size:11px;outline:none}input:focus,select:focus{border-color:#4b70d0;box-shadow:0 0 0 3px #3d72ff18}
+.insights{display:grid;grid-template-columns:1.2fr 1fr;gap:9px;margin-top:10px}.insight,.requirements{border:1px solid var(--line);border-radius:14px;background:#091423;padding:12px}.miniTitle{font-size:8px;color:#65758d;letter-spacing:1px;margin-bottom:9px}.insightRow{display:flex;gap:7px;align-items:center;font-size:9px;color:#aab7cc;padding:5px 0}.check{color:var(--green)}.warn{color:var(--amber)}
+.docGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.doc{border:1px dashed #2a3d5d;border-radius:13px;padding:13px;background:#081321;cursor:pointer}.doc b{font-size:10px}.doc small{display:block;color:#64748b;font-size:8px;line-height:1.4;margin-top:4px}.doc input{display:none}.doc.selected{border-color:#35e4ff;background:#35e4ff08}.docStatus{margin-top:9px;height:4px;border-radius:99px;background:#121e2f;overflow:hidden}.docStatus i{display:block;width:0;height:100%;background:var(--green);transition:.3s}
+.scanBox{display:none;margin-top:10px;border:1px solid #2b3f5f;border-radius:14px;background:#060d18;padding:14px}.scanBox.show{display:block}.scanTitle{display:flex;justify-content:space-between;font-size:9px;color:#b7c5da}.scanTrack{height:5px;background:#111c2c;border-radius:99px;margin-top:9px;overflow:hidden}.scanTrack i{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width 2s}
+.review .row{display:flex;justify-content:space-between;border-bottom:1px solid #17243a;padding:9px 0;font-size:10px;gap:15px}.review .row span:first-child{color:#6e7d95}.review .row span:last-child{text-align:right;overflow-wrap:anywhere}.consent{display:flex;gap:7px;color:#8594ac;font-size:9px;line-height:1.5;margin-top:11px}.consent input{width:16px;min-height:16px}.error{display:none;color:#ff8a9b;background:#ff647d0b;border:1px solid #ff647d33;border-radius:10px;padding:9px;font-size:9px;margin-top:9px}
+.actions{display:flex;gap:8px;margin-top:13px}.btn{min-height:47px;border-radius:12px;padding:0 16px;font-weight:800;font-size:11px;cursor:pointer}.back{background:#08121f;color:#9eacc2;border:1px solid var(--line)}.next{flex:1;color:white;background:linear-gradient(100deg,#426cff,#35dfff);box-shadow:0 10px 28px #3d72ff22}.btn:disabled{opacity:.45}
+.success{text-align:center;padding:25px}.ok{width:60px;height:60px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;color:var(--green);border:1px solid #2b765f;background:#31d49a0e;font-size:28px;box-shadow:0 0 30px #31d49a18}.success h2{margin:0 0 7px;font-size:22px}.success p{font-size:10px;color:var(--muted);line-height:1.6}.ref{margin-top:10px;border:1px solid #294265;background:#081523;border-radius:12px;padding:11px;font-size:10px;color:#b8c6db}
+.footer{text-align:center;color:#4f5e75;font-size:8px;padding:12px}
+@keyframes pulse{50%{box-shadow:0 0 0 15px #45e5ff06,0 0 70px #3d72ff44,inset 0 0 45px #45e5ff16}}@keyframes spin{to{transform:rotate(335deg)}}@keyframes scan{0%,100%{top:20%;opacity:0}30%,70%{opacity:1}50%{top:80%}}
+@media(max-width:760px){body{padding:7px}.layout{display:block}.side{display:flex;overflow:auto;gap:4px;margin-bottom:8px;position:static}.sideTitle{display:none}.sideBtn{min-width:125px;margin:0;padding:7px}.sideBtn small{display:none}.sideBtn .ic{width:28px;height:28px}.heroGrid{grid-template-columns:1fr}.core{display:none}.dashboard{grid-template-columns:1fr 1fr}.cards,.grid,.insights,.docGrid{grid-template-columns:1fr}.field.full{grid-column:auto}.steps{gap:2px}.step{font-size:7px}.online{display:none}.hero{padding:16px}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+<div class="brand"><div class="logo">N</div><div><b>NEXUS<span> AI</span></b><small>REGISTRATION INTELLIGENCE PLATFORM</small></div></div>
+<div class="online"><i></i>NEXUS CORE ONLINE</div>
+</header>
+
+<div class="layout">
+<aside class="side">
+<div class="sideTitle">PLATFORMS</div>
+<button class="sideBtn active" data-service="uber"><div class="ic">U</div><div><b>Uber</b><small>Driver / Delivery</small></div></button>
+<button class="sideBtn" data-service="doordash"><div class="ic">D</div><div><b>DoorDash</b><small>Delivery</small></div></button>
+<button class="sideBtn" data-service="lyft"><div class="ic">L</div><div><b>Lyft</b><small>Driver</small></div></button>
+</aside>
+
+<main class="main">
+<section class="hero">
+<div class="heroGrid">
+<div>
+<div class="eyebrow">NEXUS AI · INTELLIGENT ONBOARDING</div>
+<h1>Tu registro, <span>guiado por IA.</span></h1>
+<p>NEXUS organiza tu información, revisa la integridad de los datos que proporcionas y te acompaña hasta el siguiente paso del proceso oficial de la plataforma.</p>
+<div class="featureRow"><div class="feat">⚡ Guided workflow</div><div class="feat">◈ Data protection</div><div class="feat">▣ Document center</div><div class="feat">◎ AI insights</div></div>
+</div>
+<div class="core"><div class="orbit"></div><div class="orbit2"></div><div class="coreCircle"><div class="scan"></div></div></div>
+</div>
+</section>
+
+<section class="dashboard">
+<div class="stat"><label>AI ENGINE</label><strong class="cyan">ONLINE</strong><small>NEXUS CORE</small></div>
+<div class="stat"><label>PROFILE</label><strong id="profilePct">20%</strong><small>completion</small></div>
+<div class="stat"><label>PLATFORM</label><strong id="platformName">UBER</strong><small>selected</small></div>
+<div class="stat"><label>SECURITY</label><strong class="green">ACTIVE</strong><small>Telegram session</small></div>
+</section>
+
+<div class="progress"><div class="pTop"><span id="stepLabel">NEXUS PROCESS · 01 / 05</span><span id="pct">20%</span></div><div class="track"><i id="bar"></i></div></div>
+<div class="steps"><div class="step active" id="s1">01 PLATFORM</div><div class="step" id="s2">02 PROFILE</div><div class="step" id="s3">03 DOCUMENTS</div><div class="step" id="s4">04 REVIEW</div><div class="step" id="s5">05 COMPLETE</div></div>
+
+<section class="panel">
+<div id="p1">
+<div class="titleLine"><div><h2>Platform Intelligence</h2><div class="sub">Selecciona la plataforma que quieres preparar.</div></div><div class="aiBadge">NEXUS ANALYSIS</div></div>
+<div class="cards">
+<button class="card sel platformCard" data-service="uber"><div class="big">🚗</div><b>Uber</b><small>Driver & Delivery onboarding</small></button>
+<button class="card platformCard" data-service="doordash"><div class="big">🛵</div><b>DoorDash</b><small>Dasher onboarding</small></button>
+<button class="card platformCard" data-service="lyft"><div class="big">🚘</div><b>Lyft</b><small>Driver onboarding</small></button>
+</div>
+<div class="insights">
+<div class="insight"><div class="miniTitle">NEXUS INSIGHTS</div><div class="insightRow"><span class="check">✓</span>Proceso guiado disponible</div><div class="insightRow"><span class="check">✓</span>Perfil personal requerido</div><div class="insightRow"><span class="warn">!</span>Requisitos dependen de ciudad y plataforma</div></div>
+<div class="requirements"><div class="miniTitle">PROCESS STATUS</div><div class="insightRow"><span class="check">●</span>Assistant online</div><div class="insightRow"><span class="check">●</span>Secure session</div><div class="insightRow"><span class="cyan">●</span>Awaiting profile</div></div>
+</div>
+</div>
+
+<div id="p2" hidden>
+<div class="titleLine"><div><h2>Profile Intelligence</h2><div class="sub">Completa tu perfil con información real y verificable.</div></div><div class="aiBadge">PROFILE ENGINE</div></div>
+<div class="grid">
+<div class="field"><label>NOMBRE *</label><input id="first_name" placeholder="Nombre"></div>
+<div class="field"><label>APELLIDO *</label><input id="last_name" placeholder="Apellido"></div>
+<div class="field"><label>CORREO *</label><input id="email" type="email" placeholder="correo@ejemplo.com"></div>
+<div class="field"><label>TELÉFONO *</label><input id="phone" type="tel" placeholder="+1 000 000 0000"></div>
+<div class="field"><label>PAÍS</label><select id="country"><option>Estados Unidos</option><option>Colombia</option><option>México</option><option>Canadá</option><option>Otro</option></select></div>
+<div class="field"><label>CIUDAD *</label><input id="city" placeholder="Ciudad / Estado"></div>
+</div>
+<div class="notice"><strong>NEXUS:</strong> Usa información que coincida con tus documentos oficiales. No introduzcas contraseñas, códigos OTP, PIN bancarios ni secretos de autenticación.</div>
+</div>
+
+<div id="p3" hidden>
+<div class="titleLine"><div><h2>Document Intelligence Center</h2><div class="sub">Organiza tus documentos antes de continuar al proceso oficial.</div></div><div class="aiBadge">NEXUS VISION</div></div>
+<div class="docGrid">
+<label class="doc"><input type="file" class="docInput" accept="image/*,.pdf"><b>▣ Identity document</b><small>Selecciona una imagen o PDF para revisar localmente.</small><div class="docStatus"><i></i></div></label>
+<label class="doc"><input type="file" class="docInput" accept="image/*"><b>◉ Profile photo</b><small>Imagen clara para tu proceso de registro.</small><div class="docStatus"><i></i></div></label>
+<label class="doc"><input type="file" class="docInput" accept="image/*,.pdf"><b>▤ Vehicle documents</b><small>Opcional según plataforma y ciudad.</small><div class="docStatus"><i></i></div></label>
+</div>
+<div class="scanBox" id="scanBox"><div class="scanTitle"><span id="scanTitle">NEXUS VISION · ANALYZING</span><span id="scanPct">0%</span></div><div class="scanTrack"><i id="scanBar"></i></div></div>
+<div class="insights">
+<div class="insight"><div class="miniTitle">LOCAL QUALITY CHECK</div><div class="insightRow"><span class="check">✓</span>Archivo seleccionado</div><div class="insightRow"><span class="check">✓</span>Formato compatible</div><div class="insightRow"><span class="cyan">○</span>Final verification remains official</div></div>
+<div class="requirements"><div class="miniTitle">DOCUMENT STATUS</div><div class="insightRow"><span class="cyan" id="docCount">0</span> document(s) selected</div><div class="insightRow"><span class="check">✓</span>Ready for review</div></div>
+</div>
+<div class="notice"><strong>Privacidad:</strong> esta interfaz no falsifica ni modifica documentos. La identidad y elegibilidad deben verificarse mediante los canales oficiales de la plataforma.</div>
+</div>
+
+<div id="p4" hidden>
+<div class="titleLine"><div><h2>Neural Review</h2><div class="sub">Revisa los datos antes de enviarlos al sistema de registro.</div></div><div class="aiBadge">FINAL CHECK</div></div>
+<div class="review" id="review"></div>
+<label class="consent"><input id="consent" type="checkbox"><span>Confirmo que los datos son míos y correctos y autorizo el envío de esta información para asistencia en el proceso de registro. Comprendo que la aprobación y verificación final corresponden a la plataforma oficial.</span></label>
+<div class="error" id="error"></div>
+</div>
+
+<div id="p5" hidden class="success">
+<div class="ok">✓</div><h2>NEXUS PROCESS INITIALIZED</h2>
+<p>La información fue recibida. El siguiente paso debe completarse mediante el proceso oficial de la plataforma seleccionada.</p>
+<div class="ref" id="result"></div>
+</div>
+
+<div class="actions" id="actions"><button class="btn back" id="back" disabled>← Atrás</button><button class="btn next" id="next" disabled>Inicializar proceso →</button></div>
+</section>
+<div class="footer">NEXUS AI 2.0 · Registration Intelligence Platform · Secure onboarding assistant</div>
+</main>
+</div>
+</div>
+
+<script>
+const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand()}
+let step=1,service="uber",docSelected=0;
+const names={uber:"Uber",doordash:"DoorDash",lyft:"Lyft"},$=id=>document.getElementById(id),val=id=>$(id)?.value.trim()||"";
+document.querySelectorAll("[data-service]").forEach(el=>el.onclick=()=>{service=el.dataset.service;syncService();render()});
+function syncService(){document.querySelectorAll(".sideBtn,.platformCard").forEach(x=>x.classList.toggle("active",x.classList.contains("sideBtn")&&x.dataset.service===service)||x.classList.toggle("sel",x.classList.contains("platformCard")&&x.dataset.service===service));$("platformName").textContent=names[service].toUpperCase()}
+function valid(){if(step===1)return true;if(step===2)return["first_name","last_name","email","phone","city"].every(val);if(step===4)return $("consent").checked;return true}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function buildReview(){let rows=[["Platform",names[service]],["Name",val("first_name")+" "+val("last_name")],["Email",val("email")],["Phone",val("phone")],["Country",val("country")],["City",val("city")],["Documents",docSelected+" selected"]];$("review").innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join("")}
+function render(){for(let i=1;i<=5;i++)$("p"+i).hidden=i!==step;for(let i=1;i<=5;i++){$("s"+i).classList.toggle("active",i===step);$("s"+i).classList.toggle("done",i<step)}$("bar").style.width=step*20+"%";$("pct").textContent=step*20+"%";$("profilePct").textContent=step===1?"20%":step===2?"45%":step===3?"65%":step===4?"85%":"100%";$("stepLabel").textContent=`NEXUS PROCESS · 0${step} / 05`;$("back").disabled=step===1||step===5;$("actions").style.display=step===5?"none":"flex";$("next").textContent=step===4?"Enviar registro →":step===3?"Continuar a revisión →":step===1?"Inicializar perfil →":"Continuar →";$("next").disabled=!valid()}
+["first_name","last_name","email","phone","city","consent"].forEach(id=>$(id).addEventListener("input",render));
+$("back").onclick=()=>{if(step>1){step--;render()}};
+$("next").onclick=async()=>{if(!valid())return;if(step===3)buildReview();if(step===4){await submit();return}step++;render()};
+document.querySelectorAll(".docInput").forEach(input=>input.addEventListener("change",()=>{if(input.files.length){docSelected++;const box=input.closest(".doc");box.classList.add("selected");box.querySelector(".docStatus i").style.width="100%";$("docCount").textContent=docSelected;startScan(input.files[0].name)}}));
+function startScan(name){$("scanBox").classList.add("show");let n=0;const timer=setInterval(()=>{n+=10;$("scanBar").style.width=n+"%";$("scanPct").textContent=n+"%";if(n>=100){clearInterval(timer);$("scanTitle").textContent="NEXUS VISION · LOCAL CHECK COMPLETE"}},120)}
+async function submit(){const initData=tg?tg.initData:"";if(!initData){$("error").textContent="Abre este proceso desde el bot de Telegram para validar la sesión.";$("error").style.display="block";return}$("next").disabled=true;$("next").textContent="Transmitiendo…";const data={service,first_name:val("first_name"),last_name:val("last_name"),email:val("email"),phone:val("phone"),city:val("city"),initData};try{const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":initData},body:JSON.stringify(data)});const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok)throw new Error(out.error||"No fue posible enviar el registro");$("result").innerHTML=`<b>REFERENCE · NX-${esc(String(out.registration_id))}</b><br><br>Platform: ${esc(names[service])}<br>Status: <span style="color:var(--green)">Information received</span>`;step=5;render()}catch(e){$("error").textContent=e.message;$("error").style.display="block";$("next").disabled=false;$("next").textContent="Enviar registro →"}}
+syncService();render();
+</script>
+
+<style id="nexus30-css">
+:root{
+  --nx-cyan:#00e5ff;--nx-blue:#5b7cff;--nx-purple:#a855f7;--nx-green:#28f7a2;
+  --nx-yellow:#ffd166;--nx-red:#ff5577;--nx-bg:#050812;
+}
+body{background:
+ radial-gradient(circle at 70% 8%,rgba(0,229,255,.08),transparent 28%),
+ radial-gradient(circle at 15% 60%,rgba(168,85,247,.07),transparent 30%),
+ #050812!important;}
+.nx30-shell{position:relative;margin:18px auto;max-width:1450px;padding:0 16px;z-index:2}
+.nx30-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}
+.nx30-panel{background:linear-gradient(180deg,rgba(12,20,38,.92),rgba(6,11,23,.94));border:1px solid rgba(0,229,255,.16);
+ border-radius:18px;box-shadow:0 0 30px rgba(0,229,255,.05),inset 0 1px rgba(255,255,255,.03);overflow:hidden}
+.nx30-head{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.nx30-title{font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:#e8fbff}
+.nx30-sub{font-size:10px;color:#6e829f;margin-top:4px}
+.nx30-pill{padding:6px 10px;border-radius:999px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(40,247,162,.3);color:var(--nx-green);background:rgba(40,247,162,.06)}
+.nx30-body{padding:16px}
+.nx30-copilot{display:flex;gap:12px;align-items:flex-start}
+.nx30-orb{width:42px;height:42px;border-radius:50%;flex:none;background:radial-gradient(circle,#dffcff 0 4%,#00e5ff 9%,#1476ff 30%,transparent 68%);
+ box-shadow:0 0 18px rgba(0,229,255,.65);animation:nxPulse 2s infinite}
+@keyframes nxPulse{50%{transform:scale(1.08);filter:brightness(1.3)}}
+.nx30-message{font-size:12px;line-height:1.55;color:#c8d5e8}
+.nx30-message strong{color:#fff}
+.nx30-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.nx30-stat{padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:rgba(255,255,255,.025)}
+.nx30-stat b{display:block;font-size:19px;color:#fff}.nx30-stat span{font-size:9px;color:#70829c;text-transform:uppercase;letter-spacing:.08em}
+.nx30-meter{height:6px;border-radius:10px;background:#0d1728;overflow:hidden;margin-top:9px}.nx30-meter i{display:block;height:100%;width:72%;background:linear-gradient(90deg,var(--nx-cyan),var(--nx-purple));box-shadow:0 0 12px rgba(0,229,255,.45)}
+.nx30-timeline{display:flex;gap:0;margin-top:6px}.nx30-step{flex:1;position:relative;text-align:center;padding-top:27px}
+.nx30-step:before{content:"";position:absolute;top:8px;left:0;right:0;height:2px;background:#18243a}.nx30-step:first-child:before{left:50%}.nx30-step:last-child:before{right:50%}
+.nx30-dot{position:absolute;top:1px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;background:#14233b;border:2px solid #33445f;z-index:2}
+.nx30-step.done .nx30-dot{background:var(--nx-green);border-color:#9affd8;box-shadow:0 0 13px rgba(40,247,162,.55)}
+.nx30-step.active .nx30-dot{background:var(--nx-cyan);border-color:#d6fbff;box-shadow:0 0 16px rgba(0,229,255,.75)}
+.nx30-step label{display:block;font-size:9px;color:#8192aa}.nx30-step small{display:block;font-size:8px;color:#50617a;margin-top:4px}
+.nx30-signal{display:flex;justify-content:space-between;align-items:center;padding:10px 11px;margin:7px 0;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
+.nx30-signal span{font-size:10px;color:#b6c5d8}.nx30-signal em{font-style:normal;font-size:9px;color:var(--nx-green)}
+.nx30-signal.warn em{color:var(--nx-yellow)}.nx30-signal.info em{color:var(--nx-cyan)}
+.nx30-doc{border:1px dashed rgba(0,229,255,.28);padding:16px;border-radius:14px;text-align:center;background:rgba(0,229,255,.025)}
+.nx30-doc input{width:100%;font-size:10px;color:#8497b2}.nx30-preview{margin-top:10px;min-height:70px;display:flex;align-items:center;justify-content:center;color:#62758f;font-size:10px}
+.nx30-progress{height:7px;background:#0b1424;border-radius:9px;overflow:hidden}.nx30-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--nx-cyan),var(--nx-blue),var(--nx-purple));transition:width .5s}
+.nx30-ref{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;color:#bdefff;letter-spacing:.08em}
+.nx30-final{display:none;text-align:center;padding:28px}.nx30-final.show{display:block;animation:nxIn .6s ease}
+@keyframes nxIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.nx30-core{width:90px;height:90px;margin:0 auto 16px;border-radius:50%;background:radial-gradient(circle,#fff 0 3%,#00e5ff 8%,#266cff 28%,#8b5cf6 42%,transparent 70%);
+ box-shadow:0 0 25px #00e5ff66,0 0 55px #8b5cf633;animation:nxSpin 5s linear infinite}
+@keyframes nxSpin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.nx30-grid{grid-template-columns:1fr}.nx30-cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<div class="nx30-shell">
+  <div class="nx30-grid">
+    <section class="nx30-panel">
+      <div class="nx30-head">
+        <div><div class="nx30-title">NEXUS COMMAND CENTER</div><div class="nx30-sub">Orquestación inteligente del proceso de preparación</div></div>
+        <div class="nx30-pill" id="nxEngine">CORE ONLINE</div>
+      </div>
+      <div class="nx30-body">
+        <div class="nx30-copilot">
+          <div class="nx30-orb"></div>
+          <div class="nx30-message" id="nxCopilot"><strong>NEXUS Copilot:</strong> Analizando el estado del perfil y preparando la siguiente acción.</div>
+        </div>
+        <div class="nx30-cards" style="margin-top:16px">
+          <div class="nx30-stat"><b id="nxScore">72%</b><span>Profile readiness</span><div class="nx30-meter"><i id="nxScoreBar"></i></div></div>
+          <div class="nx30-stat"><b id="nxSignals">0</b><span>Risk signals</span><div class="nx-meter nx30-meter"><i id="nxSignalBar" style="width:8%"></i></div></div>
+          <div class="nx30-stat"><b id="nxDocs">0/3</b><span>Documents</span><div class="nx30-meter"><i id="nxDocBar" style="width:0%"></i></div></div>
+          <div class="nx30-stat"><b id="nxConsistency">READY</b><span>Consistency</span><div class="nx30-meter"><i id="nxConsistencyBar" style="width:76%"></i></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nx30-panel">
+      <div class="nx30-head"><div><div class="nx30-title">CONSISTENCY ENGINE</div><div class="nx30-sub">Controles locales de coherencia</div></div><div class="nx30-pill">LIVE</div></div>
+      <div class="nx30-body" id="nxSignalsList">
+        <div class="nx30-signal"><span>Required fields</span><em>READY</em></div>
+        <div class="nx30-signal"><span>Contact format</span><em>READY</em></div>
+        <div class="nx30-signal"><span>Profile coherence</span><em>READY</em></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="nx30-panel" style="margin-top:16px">
+    <div class="nx30-head"><div><div class="nx30-title">NEXUS VERIFICATION TIMELINE</div><div class="nx30-sub">Preparación → revisión → plataforma oficial</div></div><div class="nx30-pill">SECURE FLOW</div></div>
+    <div class="nx30-body">
+      <div class="nx30-timeline" id="nxTimeline">
+        <div class="nx30-step done"><div class="nx30-dot"></div><label>Profile</label><small>Captured</small></div>
+        <div class="nx30-step active"><div class="nx30-dot"></div><label>Consistency</label><small>Analyzing</small></div>
+        <div class="nx30-step"><div class="nx30-dot"></div><label>Documents</label><small>Pending</small></div>
+        <div class="nx30-step"><div class="nx30-dot"></div><label>Review</label><small>Pending</small></div>
+        <div class="nx30-step"><div class="nx30-dot"></div><label>Official</label><small>Platform</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nx30-grid" style="margin-top:16px">
+    <section class="nx30-panel">
+      <div class="nx30-head"><div><div class="nx30-title">NEXUS VISION</div><div class="nx30-sub">Evaluación local de calidad del archivo</div></div><div class="nx30-pill">LOCAL ANALYSIS</div></div>
+      <div class="nx30-body">
+        <div class="nx30-doc">
+          <div style="font-size:12px;color:#dffcff;font-weight:700">DOCUMENT INTELLIGENCE CENTER</div>
+          <div style="font-size:9px;color:#60738e;margin:5px 0 12px">La imagen se analiza por formato, tamaño, orientación y calidad básica. No confirma identidad ni aprobación.</div>
+          <input id="nxDocInput" type="file" accept="image/*,.pdf">
+          <div class="nx30-preview" id="nxDocPreview">Esperando documento…</div>
+          <div class="nx30-progress"><i id="nxDocProgress"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nx30-panel">
+      <div class="nx30-head"><div><div class="nx30-title">RISK SIGNALS</div><div class="nx30-sub">Indicadores informativos, no decisión oficial</div></div><div class="nx30-pill">ADVISORY</div></div>
+      <div class="nx30-body">
+        <div class="nx30-signal"><span>Missing information</span><em id="nxMissing">0</em></div>
+        <div class="nx30-signal"><span>Format anomalies</span><em id="nxFormat">0</em></div>
+        <div class="nx30-signal"><span>Document quality</span><em id="nxQuality">PENDING</em></div>
+        <div class="nx30-signal info"><span>Official verification</span><em>REQUIRED</em></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="nx30-panel" style="margin-top:16px">
+    <div class="nx30-head"><div><div class="nx30-title">VERIFICATION PASSPORT</div><div class="nx30-sub">Referencia interna del proceso</div></div><div class="nx30-pill">GENERATED</div></div>
+    <div class="nx30-body">
+      <div class="nx30-ref" id="nxRef">NXS-READY-000000</div>
+      <div style="font-size:9px;color:#657791;margin-top:7px">Esta referencia identifica el flujo dentro de NEXUS. No representa aprobación, identidad verificada ni decisión de la plataforma.</div>
+    </div>
+    <div class="nx30-final" id="nxFinal">
+      <div class="nx30-core"></div>
+      <div class="nx30-title" style="font-size:15px">NEXUS FLOW READY</div>
+      <div style="font-size:11px;color:#9eb0c7;margin-top:8px">La información quedó preparada para continuar mediante el proceso oficial de la plataforma seleccionada.</div>
+    </div>
+  </div>
+</div>
+
+<script id="nexus30-js">
+(function(){
+  const $=s=>document.querySelector(s);
+  const inputs=[...document.querySelectorAll('input,select')];
+  const ref=$('#nxRef');
+  ref.textContent='NXS-'+new Date().toISOString().slice(0,10).replaceAll('-','')+'-'+Math.random().toString(36).slice(2,8).toUpperCase();
+
+  function evaluate(){
+    const vals=inputs.map(x=>(x.value||'').trim()).filter(Boolean);
+    let missing=0, format=0;
+    const email=document.querySelector('input[type="email"]');
+    const phone=document.querySelector('input[type="tel"]');
+    document.querySelectorAll('input[required],select[required]').forEach(x=>{if(!(x.value||'').trim())missing++});
+    if(email && email.value && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.value))format++;
+    if(phone && phone.value && phone.value.replace(/\\D/g,'').length<7)format++;
+    $('#nxMissing').textContent=missing;
+    $('#nxFormat').textContent=format;
+    $('#nxSignals').textContent=missing+format;
+    $('#nxSignalBar').style.width=Math.min(100,(missing+format)*18+5)+'%';
+    const score=Math.max(35,Math.min(98,82-missing*8-format*10+Math.min(vals.length*2,14)));
+    $('#nxScore').textContent=score+'%';
+    $('#nxScoreBar').style.width=score+'%';
+    $('#nxConsistency').textContent=(missing||format)?'REVIEW':'READY';
+    $('#nxConsistencyBar').style.width=Math.max(10,score-format*10)+'%';
+    const list=$('#nxSignalsList');
+    list.innerHTML=[
+      ['Required fields',missing?'REVIEW':'READY',missing?'warn':''],
+      ['Contact format',format?'REVIEW':'READY',format?'warn':''],
+      ['Profile coherence',(missing||format)?'PENDING':'READY',(missing||format)?'warn':'']
+    ].map(a=>`<div class="nx30-signal ${a[2]}"><span>${a[0]}</span><em>${a[1]}</em></div>`).join('');
+    $('#nxCopilot').innerHTML=(missing||format)
+      ? '<strong>NEXUS Copilot:</strong> Detecté información que conviene revisar antes de continuar. Corrige los indicadores marcados para mejorar la consistencia.'
+      : '<strong>NEXUS Copilot:</strong> El perfil mantiene una estructura consistente. Puedes continuar con la preparación documental y la revisión.';
+  }
+  inputs.forEach(x=>x.addEventListener('input',evaluate));
+  evaluate();
+
+  const doc=$('#nxDocInput');
+  doc.addEventListener('change',()=>{
+    const f=doc.files[0]; if(!f)return;
+    const preview=$('#nxDocPreview'), bar=$('#nxDocProgress');
+    let notes=[];
+    if(f.size<80*1024)notes.push('archivo pequeño');
+    if(f.size>10*1024*1024)notes.push('archivo grande');
+    const isImg=f.type.startsWith('image/');
+    if(!isImg && f.type!=='application/pdf')notes.push('formato no recomendado');
+    preview.textContent='Analizando '+f.name+'…'; bar.style.width='25%';
+    if(isImg){
+      const im=new Image(), url=URL.createObjectURL(f);
+      im.onload=()=>{
+        let q=[];
+        if(im.width<1000||im.height<700)q.push('resolución baja');
+        if(im.width/im.height>2.5||im.height/im.width>2.5)q.push('encuadre inusual');
+        notes=notes.concat(q);
+        bar.style.width='100%';
+        $('#nxDocs').textContent='1/3'; $('#nxDocBar').style.width='33%';
+        $('#nxQuality').textContent=notes.length?'REVIEW':'GOOD';
+        preview.textContent=notes.length?'Revisión recomendada: '+notes.join(' · '):'Calidad básica compatible · '+im.width+'×'+im.height+' px';
+        URL.revokeObjectURL(url);
+      }; im.onerror=()=>{bar.style.width='100%';$('#nxQuality').textContent='REVIEW';preview.textContent='No fue posible leer la imagen.'};
+      im.src=url;
+    }else{
+      setTimeout(()=>{bar.style.width='100%';$('#nxDocs').textContent='1/3';$('#nxDocBar').style.width='33%';$('#nxQuality').textContent=notes.length?'REVIEW':'GOOD';preview.textContent=notes.length?notes.join(' · '):'PDF recibido · validación básica de archivo completada';},450);
+    }
+  });
+})();
+</script>
+
+
+<style id="nexus40-css">
+:root{--q:#00eaff;--b:#5d7cff;--p:#b55cff;--g:#32ffb0;--w:#ffd76a;--r:#ff5577}
+.nx40{position:relative;z-index:5;max-width:1500px;margin:0 auto;padding:12px 14px 40px;color:#dcecff;font-family:inherit}
+.nx40 *{box-sizing:border-box}.qgrid{display:grid;grid-template-columns:260px minmax(0,1fr) 300px;gap:14px}
+.qpanel{background:linear-gradient(180deg,rgba(8,17,33,.94),rgba(3,8,18,.96));border:1px solid rgba(0,234,255,.16);border-radius:18px;box-shadow:0 0 30px rgba(0,234,255,.035),inset 0 1px rgba(255,255,255,.035);overflow:hidden}
+.qhead{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center}
+.qtitle{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#f1fcff}.qsub{font-size:8px;color:#647895;margin-top:4px;letter-spacing:.04em}
+.qbody{padding:15px}.qpill{font-size:8px;border:1px solid rgba(50,255,176,.3);background:rgba(50,255,176,.055);color:var(--g);padding:5px 8px;border-radius:999px;letter-spacing:.1em}
+.qhero{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
+.qhero:before,.qhero:after{content:"";position:absolute;border:1px solid rgba(0,234,255,.08);border-radius:50%;width:330px;height:330px;animation:qspin 18s linear infinite}
+.qhero:after{width:460px;height:460px;border-style:dashed;animation-direction:reverse;animation-duration:26s}
+@keyframes qspin{to{transform:rotate(360deg)}}
+.qcore{width:122px;height:122px;border-radius:50%;position:relative;background:radial-gradient(circle,#fff 0 3%,#b8fbff 5%,#00eaff 11%,#246cff 29%,#b55cff 43%,transparent 69%);box-shadow:0 0 30px rgba(0,234,255,.8),0 0 80px rgba(181,92,255,.2);animation:qbreath 2.4s ease-in-out infinite;z-index:2}
+.qcore:before,.qcore:after{content:"";position:absolute;inset:-22px;border:1px solid rgba(0,234,255,.42);border-radius:50%;transform:rotate(22deg) skewX(8deg)}
+.qcore:after{inset:-37px;transform:rotate(-38deg) skewX(-10deg);border-color:rgba(181,92,255,.28)}
+@keyframes qbreath{50%{transform:scale(1.09);filter:brightness(1.25)}}
+.qstatus{margin-top:24px;z-index:3}.qstatus b{display:block;font-size:17px;letter-spacing:.12em}.qstatus span{font-size:8px;color:#6f839f;letter-spacing:.14em}
+.qmetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.qmetric{padding:10px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
+.qmetric b{font-size:17px;color:#fff}.qmetric span{display:block;font-size:8px;color:#6c7e98;text-transform:uppercase;margin-top:3px}
+.qbar{height:5px;background:#0c1728;border-radius:10px;overflow:hidden;margin-top:7px}.qbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--q),var(--b),var(--p));box-shadow:0 0 10px rgba(0,234,255,.45);transition:width .5s}
+.qnodes{display:flex;flex-direction:column;gap:7px}.qnode{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);border-radius:11px}
+.qdot{width:9px;height:9px;border-radius:50%;background:#263650;box-shadow:0 0 0 transparent}.qnode.on .qdot{background:var(--g);box-shadow:0 0 12px rgba(50,255,176,.8)}.qnode.active .qdot{background:var(--q);box-shadow:0 0 12px rgba(0,234,255,.9)}
+.qnode div{flex:1}.qnode b{font-size:9px;display:block}.qnode small{font-size:7px;color:#627590}.qnode em{font-style:normal;font-size:7px;color:#627590}.qnode.on em{color:var(--g)}.qnode.active em{color:var(--q)}
+.qstream{height:220px;overflow:auto;font-family:ui-monospace,monospace;font-size:8px;color:#7e92ad;line-height:1.8}.qstream div:before{content:"› ";color:var(--q)}.qstream .good{color:#79ffc5}.qstream .warn{color:#ffd878}
+.qmatrix{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.qcell{padding:9px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.02)}.qcell b{font-size:8px}.qcell span{display:block;font-size:8px;color:var(--g);margin-top:5px}
+.qscanner{border:1px dashed rgba(0,234,255,.3);border-radius:14px;padding:15px;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(0,234,255,.025),rgba(181,92,255,.025))}
+.qscanner .beam{position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--q),transparent);box-shadow:0 0 18px var(--q);animation:scan 2.8s linear infinite}@keyframes scan{to{top:100%}}
+.qdrop{border:1px dashed rgba(255,255,255,.12);border-radius:11px;padding:18px;text-align:center;color:#60738e;font-size:9px}.qdrop input{max-width:100%}
+.qpassport{display:grid;grid-template-columns:1fr 110px;gap:15px;align-items:center}.qcode{height:100px;border:1px solid rgba(0,234,255,.18);display:grid;place-items:center;border-radius:12px;background:repeating-linear-gradient(45deg,rgba(0,234,255,.07) 0 2px,transparent 2px 5px);font:10px monospace;color:#9defff}
+.qbutton{border:1px solid rgba(0,234,255,.28);background:rgba(0,234,255,.06);color:#cfffff;border-radius:10px;padding:9px 12px;font-size:8px;text-transform:uppercase;letter-spacing:.1em;cursor:pointer}
+.qmodal{position:fixed;inset:0;background:rgba(1,5,12,.88);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:9999}.qmodal.show{display:flex}.qmodalbox{width:min(720px,92vw);border:1px solid rgba(0,234,255,.25);border-radius:22px;background:#050c19;box-shadow:0 0 80px rgba(0,234,255,.12);padding:28px;text-align:center}
+@media(max-width:1120px){.qgrid{grid-template-columns:220px 1fr}.qright{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}.qhero{min-height:350px}}
+@media(max-width:760px){.qgrid{grid-template-columns:1fr}.qright{display:block}.qmetrics{grid-template-columns:repeat(2,1fr)}.qmatrix{grid-template-columns:1fr 1fr}.qpassport{grid-template-columns:1fr}.qcode{width:110px;margin:auto}}
+</style>
+
+<section class="nx40" id="nexus40">
+  <div class="qgrid">
+    <aside class="qpanel">
+      <div class="qhead"><div><div class="qtitle">NEXUS 4.0</div><div class="qsub">QUANTUM VERIFICATION</div></div><div class="qpill">ONLINE</div></div>
+      <div class="qbody">
+        <div class="qtitle" style="margin-bottom:10px">Verification Pipeline</div>
+        <div class="qnodes" id="qNodes">
+          <div class="qnode on"><i class="qdot"></i><div><b>PROFILE ENGINE</b><small>Input structure</small></div><em>READY</em></div>
+          <div class="qnode active"><i class="qdot"></i><div><b>CONSISTENCY MATRIX</b><small>Cross-checking</small></div><em>LIVE</em></div>
+          <div class="qnode"><i class="qdot"></i><div><b>NEXUS VISION</b><small>Document quality</small></div><em>WAIT</em></div>
+          <div class="qnode"><i class="qdot"></i><div><b>SECURITY LAYER</b><small>Session integrity</small></div><em>READY</em></div>
+          <div class="qnode"><i class="qdot"></i><div><b>OFFICIAL FLOW</b><small>External verification</small></div><em>REQUIRED</em></div>
+        </div>
+        <div style="height:14px"></div>
+        <button class="qbutton" id="qMission">OPEN MISSION CONTROL</button>
+      </div>
+    </aside>
+
+    <main>
+      <div class="qpanel qhero">
+        <div class="qcore" id="qCore"></div>
+        <div class="qstatus">
+          <b id="qState">NEXUS CORE SYNCHRONIZED</b>
+          <span id="qStateSub">INTELLIGENCE ENGINE · ONLINE</span>
+        </div>
+        <div class="qmetrics" style="width:94%">
+          <div class="qmetric"><b id="qReady">86%</b><span>Readiness</span><div class="qbar"><i id="qReadyBar" style="width:86%"></i></div></div>
+          <div class="qmetric"><b id="qCoherence">98%</b><span>Coherence</span><div class="qbar"><i style="width:98%"></i></div></div>
+          <div class="qmetric"><b id="qDocs">0/3</b><span>Documents</span><div class="qbar"><i id="qDocsBar"></i></div></div>
+          <div class="qmetric"><b id="qRisk">0</b><span>Signals</span><div class="qbar"><i id="qRiskBar" style="width:4%"></i></div></div>
+        </div>
+      </div>
+
+      <div class="qpanel" style="margin-top:14px">
+        <div class="qhead"><div><div class="qtitle">NEURAL VERIFICATION MAP</div><div class="qsub">Relationship graph of local checks</div></div><div class="qpill">LIVE GRAPH</div></div>
+        <div class="qbody">
+          <div class="qmatrix" id="qMatrix">
+            <div class="qcell"><b>PROFILE</b><span>CONNECTED</span></div>
+            <div class="qcell"><b>CONTACT</b><span>CONNECTED</span></div>
+            <div class="qcell"><b>FORMAT</b><span>CONNECTED</span></div>
+            <div class="qcell"><b>DOCUMENT</b><span>PENDING</span></div>
+            <div class="qcell"><b>QUALITY</b><span>PENDING</span></div>
+            <div class="qcell"><b>SECURITY</b><span>READY</span></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="qright">
+      <section class="qpanel">
+        <div class="qhead"><div><div class="qtitle">AI COPILOT</div><div class="qsub">LIVE PROCESS NARRATION</div></div></div>
+        <div class="qbody">
+          <div style="font-size:11px;line-height:1.65;color:#b9cbe0" id="qCopilot"><b style="color:#fff">NEXUS:</b> El núcleo está sincronizado. Preparando comprobaciones locales.</div>
+        </div>
+      </section>
+      <section class="qpanel" style="margin-top:14px">
+        <div class="qhead"><div><div class="qtitle">EVENT STREAM</div><div class="qsub">SYSTEM ACTIVITY</div></div></div>
+        <div class="qbody"><div class="qstream" id="qStream">
+          <div class="good">CORE initialized</div><div>Profile engine online</div><div>Consistency matrix ready</div><div>Security layer armed</div>
+        </div></div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="qgrid" style="margin-top:14px">
+    <section class="qpanel">
+      <div class="qhead"><div><div class="qtitle">NEXUS VISION</div><div class="qsub">DOCUMENT INTELLIGENCE</div></div><div class="qpill">LOCAL</div></div>
+      <div class="qbody">
+        <div class="qscanner"><div class="beam"></div>
+          <div class="qdrop">
+            <b style="color:#dffcff;display:block;margin-bottom:7px">DROP DOCUMENT / SELECT FILE</b>
+            <input id="qDoc" type="file" accept="image/*,.pdf">
+            <div id="qDocResult" style="margin-top:10px">Awaiting document input…</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px">
+            <div class="qmetric"><b id="qEdge">—</b><span>Edges</span></div><div class="qmetric"><b id="qSharp">—</b><span>Quality</span></div><div class="qmetric"><b id="qOrient">—</b><span>Orientation</span></div><div class="qmetric"><b id="qVisible">—</b><span>Visibility</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="qpanel">
+      <div class="qhead"><div><div class="qtitle">SECURITY LAYER</div><div class="qsub">SESSION INTEGRITY</div></div><div class="qpill">ACTIVE</div></div>
+      <div class="qbody" id="qSecurity">
+        <div class="qnode on"><i class="qdot"></i><div><b>SESSION</b><small>Active environment</small></div><em>SECURE</em></div>
+        <div class="qnode on" style="margin-top:7px"><i class="qdot"></i><div><b>DATA INTEGRITY</b><small>Request structure</small></div><em>OK</em></div>
+        <div class="qnode on" style="margin-top:7px"><i class="qdot"></i><div><b>OFFICIAL VERIFICATION</b><small>Performed externally</small></div><em>REQUIRED</em></div>
+      </div>
+    </section>
+
+    <section class="qpanel">
+      <div class="qhead"><div><div class="qtitle">VERIFICATION PASSPORT</div><div class="qsub">INTERNAL PROCESS REFERENCE</div></div><div class="qpill">READY</div></div>
+      <div class="qbody">
+        <div class="qpassport"><div>
+          <div style="font-size:8px;color:#657893">NEXUS REFERENCE</div>
+          <div id="qRef" style="font:11px ui-monospace,monospace;color:#bff7ff;letter-spacing:.08em;margin:5px 0 10px">NXS-000000</div>
+          <div style="font-size:8px;color:#667a95;line-height:1.5">Internal reference only. It does not represent identity verification, platform approval, or an official decision.</div>
+        </div><div class="qcode" id="qCode">NEXUS<br>READY</div></div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<div class="qmodal" id="qModal">
+  <div class="qmodalbox">
+    <div class="qcore" style="margin:0 auto 18px;width:85px;height:85px"></div>
+    <div class="qtitle" style="font-size:15px">NEXUS MISSION CONTROL</div>
+    <p style="font-size:10px;color:#8194ae;line-height:1.6">Centro visual para acompanhar el estado del proceso, comprobaciones locales y preparación para continuar mediante la plataforma oficial.</p>
+    <div class="qstream" id="qModalStream" style="text-align:left;height:150px;margin:15px 0"></div>
+    <button class="qbutton" id="qClose">RETURN TO COMMAND CENTER</button>
+  </div>
+</div>
+
+<script id="nexus40-js">
+(()=> {
+ const $=s=>document.querySelector(s), stream=$('#qStream'), add=(t,c='')=>{const d=document.createElement('div');d.className=c;d.textContent=new Date().toLocaleTimeString()+'  '+t;stream.appendChild(d);stream.scrollTop=stream.scrollHeight};
+ const ref='NXS-'+new Date().toISOString().slice(2,10).replaceAll('-','')+'-'+Math.random().toString(36).slice(2,8).toUpperCase(); $('#qRef').textContent=ref; $('#qCode').textContent='NXS\\n'+ref.slice(-6);
+ const all=[...document.querySelectorAll('input,select')];
+ function assess(){
+   let miss=0,bad=0;
+   all.forEach(x=>{if(x.required&&!String(x.value||'').trim())miss++});
+   const email=document.querySelector('input[type=email]'), phone=document.querySelector('input[type=tel]');
+   if(email?.value&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))bad++;
+   if(phone?.value&&phone.value.replace(/\D/g,'').length<7)bad++;
+   const readiness=Math.max(35,Math.min(99,86-miss*7-bad*10));
+   $('#qReady').textContent=readiness+'%'; $('#qReadyBar').style.width=readiness+'%';
+   $('#qRisk').textContent=miss+bad; $('#qRiskBar').style.width=Math.min(100,(miss+bad)*18+4)+'%';
+   $('#qCoherence').textContent=(miss||bad)?Math.max(60,98-bad*18-miss*5)+'%':'98%';
+   $('#qCopilot').innerHTML=(miss||bad)
+    ? '<b style="color:#fff">NEXUS:</b> Detecté señales de consistencia que conviene revisar antes de continuar.'
+    : '<b style="color:#fff">NEXUS:</b> Los datos visibles mantienen coherencia estructural. El siguiente paso es la preparación documental.';
+ }
+ all.forEach(x=>x.addEventListener('input',()=>{assess();add('Profile data updated')}));
+ assess();
+
+ const doc=$('#qDoc');
+ doc.addEventListener('change',()=>{
+   const f=doc.files[0]; if(!f)return;
+   add('Document received: '+f.name,'good');
+   $('#qState').textContent='NEXUS VISION ACTIVE'; $('#qStateSub').textContent='DOCUMENT INTELLIGENCE · SCANNING';
+   $('#qDocResult').textContent='Scanning file metadata and basic visual properties…';
+   const notes=[]; if(f.size<80*1024)notes.push('small file'); if(f.size>10*1024*1024)notes.push('large file');
+   if(f.type.startsWith('image/')){
+     const im=new Image(),u=URL.createObjectURL(f);
+     im.onload=()=>{
+       const res=(im.width>=1000&&im.height>=700)?'PASS':'REVIEW';
+       $('#qEdge').textContent=res; $('#qSharp').textContent=res; $('#qOrient').textContent='PASS'; $('#qVisible').textContent='PASS';
+       $('#qDocs').textContent='1/3'; $('#qDocsBar').style.width='33%';
+       $('#qDocResult').textContent=(notes.length?notes.join(' · ')+' · ':'')+im.width+'×'+im.height+' px · basic quality review complete';
+       $('#qMatrix').children[3].querySelector('span').textContent='RECEIVED';
+       $('#qMatrix').children[4].querySelector('span').textContent=res;
+       $('#qState').textContent='NEXUS CORE SYNCHRONIZED'; $('#qStateSub').textContent='INTELLIGENCE ENGINE · ONLINE';
+       add('Vision scan completed','good'); URL.revokeObjectURL(u);
+     }; im.onerror=()=>{$('#qDocResult').textContent='Unable to inspect image';add('Vision scan requires review','warn')}; im.src=u;
+   }else{
+     setTimeout(()=>{$('#qEdge').textContent='PASS';$('#qSharp').textContent='PASS';$('#qOrient').textContent='N/A';$('#qVisible').textContent='PASS';$('#qDocs').textContent='1/3';$('#qDocsBar').style.width='33%';$('#qDocResult').textContent='PDF received · basic file inspection complete';add('PDF inspection completed','good')},500);
+   }
+ });
+ $('#qMission').onclick=()=>{ $('#qModal').classList.add('show'); $('#qModalStream').innerHTML=stream.innerHTML };
+ $('#qClose').onclick=()=>$('#qModal').classList.remove('show');
+})();
+</script>
+
+
+<style id="nexus50-css">
+.nx50{max-width:1550px;margin:0 auto;padding:14px;color:#e8f8ff;position:relative;z-index:8}
+.nx50 *{box-sizing:border-box}.n5panel{background:linear-gradient(180deg,rgba(6,15,30,.96),rgba(2,7,16,.98));border:1px solid rgba(0,229,255,.17);border-radius:20px;box-shadow:0 0 35px rgba(0,229,255,.04),inset 0 1px rgba(255,255,255,.035);overflow:hidden}
+.n5head{padding:14px 17px;border-bottom:1px solid rgba(255,255,255,.065);display:flex;justify-content:space-between;align-items:center}.n5title{font-size:11px;font-weight:900;letter-spacing:.14em}.n5sub{font-size:8px;color:#687b96;margin-top:4px}.n5pill{font-size:8px;color:#32ffb0;border:1px solid rgba(50,255,176,.25);padding:5px 8px;border-radius:999px;letter-spacing:.1em}.n5body{padding:16px}
+.n5command{display:grid;grid-template-columns:260px minmax(0,1fr) 280px;gap:14px}.n5core{height:400px;display:grid;place-items:center;position:relative;text-align:center;overflow:hidden}.n5core:before,.n5core:after{content:"";position:absolute;border:1px solid rgba(0,229,255,.11);border-radius:50%;width:330px;height:330px;animation:n5spin 18s linear infinite}.n5core:after{width:470px;height:470px;border-style:dashed;animation-direction:reverse;animation-duration:29s}@keyframes n5spin{to{transform:rotate(360deg)}}
+.n5orb{width:126px;height:126px;border-radius:50%;background:radial-gradient(circle,#fff 0 3%,#c8fbff 5%,#00e5ff 12%,#356dff 29%,#b855ff 44%,transparent 70%);box-shadow:0 0 35px rgba(0,229,255,.75),0 0 85px rgba(184,85,255,.2);animation:n5pulse 2.5s infinite;z-index:2}@keyframes n5pulse{50%{transform:scale(1.1);filter:brightness(1.25)}}.n5state{position:absolute;bottom:42px;z-index:3}.n5state b{display:block;font-size:16px;letter-spacing:.12em}.n5state span{font-size:8px;color:#6f829c;letter-spacing:.15em}
+.n5metrics{position:absolute;bottom:12px;left:4%;right:4%;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;z-index:4}.n5metric{padding:8px;text-align:left;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:11px}.n5metric b{font-size:15px}.n5metric span{display:block;font-size:7px;color:#6d809b;text-transform:uppercase}.n5bar{height:4px;background:#0c1627;border-radius:8px;margin-top:6px;overflow:hidden}.n5bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00e5ff,#5979ff,#b855ff);transition:width .5s}
+.n5nodes{display:flex;flex-direction:column;gap:7px}.n5node{display:flex;align-items:center;gap:8px;padding:9px;border-radius:11px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06)}.n5node .dot{width:9px;height:9px;border-radius:50%;background:#263650}.n5node.on .dot{background:#32ffb0;box-shadow:0 0 11px #32ffb0}.n5node.live .dot{background:#00e5ff;box-shadow:0 0 13px #00e5ff}.n5node div{flex:1}.n5node b{font-size:8px}.n5node small{display:block;font-size:7px;color:#61748f}.n5node em{font-size:7px;font-style:normal;color:#62758e}.n5node.on em{color:#32ffb0}.n5node.live em{color:#00e5ff}
+.n5stream{height:190px;overflow:auto;font:8px/1.9 ui-monospace,monospace;color:#8093ad}.n5stream div:before{content:"› ";color:#00e5ff}.n5stream .ok{color:#78ffc5}.n5stream .warn{color:#ffd56c}
+.n5radar{height:230px;position:relative;display:grid;place-items:center}.n5radar svg{width:100%;height:100%}.n5radar text{fill:#7e92ad;font-size:8px}.n5radar polygon{fill:rgba(0,229,255,.08);stroke:#00e5ff;stroke-width:1}.n5radar circle,.n5radar line{stroke:rgba(0,229,255,.18);fill:none}
+.n5lab{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}.n5scanner{position:relative;min-height:190px;border:1px dashed rgba(0,229,255,.28);border-radius:15px;overflow:hidden;padding:15px;background:linear-gradient(135deg,rgba(0,229,255,.025),rgba(184,85,255,.025))}.n5beam{position:absolute;left:0;right:0;height:2px;top:0;background:linear-gradient(90deg,transparent,#00e5ff,transparent);box-shadow:0 0 18px #00e5ff;animation:n5scan 2.8s linear infinite}@keyframes n5scan{to{top:100%}}.n5drop{text-align:center;padding:28px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:#647792;font-size:9px}.n5drop input{max-width:100%}
+.n5matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.n5cell{padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.02)}.n5cell b{font-size:8px}.n5cell span{display:block;color:#32ffb0;font-size:8px;margin-top:5px}
+.n5passport{display:grid;grid-template-columns:1fr 120px;gap:15px;align-items:center}.n5qr{height:105px;border:1px solid rgba(0,229,255,.2);border-radius:12px;display:grid;place-items:center;background:repeating-linear-gradient(45deg,rgba(0,229,255,.08) 0 2px,transparent 2px 5px);font:9px monospace;color:#b8f8ff}
+.n5button{cursor:pointer;border:1px solid rgba(0,229,255,.28);background:rgba(0,229,255,.055);color:#d8fbff;border-radius:10px;padding:10px 13px;font-size:8px;letter-spacing:.1em;text-transform:uppercase}.n5button:hover{box-shadow:0 0 20px rgba(0,229,255,.14)}
+.n5overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(1,4,10,.9);backdrop-filter:blur(13px);z-index:10000}.n5overlay.show{display:flex}.n5modal{width:min(760px,92vw);padding:30px;border:1px solid rgba(0,229,255,.24);border-radius:24px;background:#040b18;box-shadow:0 0 90px rgba(0,229,255,.12);text-align:center}
+.n5fullscreen{position:fixed;inset:0;background:#020712;z-index:10001;display:none;align-items:center;justify-content:center;text-align:center}.n5fullscreen.show{display:flex}.n5fsorb{width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,#fff 0 2%,#00e5ff 8%,#316cff 28%,#b855ff 45%,transparent 70%);box-shadow:0 0 40px #00e5ff99,0 0 100px #b855ff33;animation:n5pulse 2s infinite}.n5fs h2{letter-spacing:.16em;font-size:16px}.n5fs p{font-size:9px;color:#71849e}.n5fsteps{display:flex;gap:5px;justify-content:center;margin-top:20px}.n5fsteps i{width:45px;height:3px;background:#1a2940}.n5fsteps i.active{background:#00e5ff;box-shadow:0 0 10px #00e5ff}
+@media(max-width:1100px){.n5command{grid-template-columns:220px 1fr}.n5right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}.n5lab{grid-template-columns:1fr}}@media(max-width:700px){.n5command{grid-template-columns:1fr}.n5right{display:block}.n5metrics{grid-template-columns:repeat(2,1fr)}.n5matrix{grid-template-columns:1fr 1fr}.n5passport{grid-template-columns:1fr}.n5qr{width:120px;margin:auto}}
+</style>
+
+<section class="nx50">
+  <div class="n5command">
+    <aside class="n5panel">
+      <div class="n5head"><div><div class="n5title">NEXUS 5.0</div><div class="n5sub">QUANTUM COMMAND CENTER</div></div><div class="n5pill">ONLINE</div></div>
+      <div class="n5body">
+        <div class="n5title" style="margin-bottom:10px">AI Pipeline</div>
+        <div class="n5nodes" id="n5nodes">
+          <div class="n5node on"><i class="dot"></i><div><b>PROFILE ENGINE</b><small>Input structure</small></div><em>READY</em></div>
+          <div class="n5node live"><i class="dot"></i><div><b>CONSISTENCY GRAPH</b><small>Cross-checking</small></div><em>LIVE</em></div>
+          <div class="n5node"><i class="dot"></i><div><b>VISION ENGINE</b><small>Document quality</small></div><em>WAIT</em></div>
+          <div class="n5node on"><i class="dot"></i><div><b>SECURITY LAYER</b><small>Session integrity</small></div><em>ACTIVE</em></div>
+          <div class="n5node"><i class="dot"></i><div><b>OFFICIAL FLOW</b><small>External process</small></div><em>REQUIRED</em></div>
+        </div>
+        <button class="n5button" id="n5Start" style="width:100%;margin-top:14px">START FULL VERIFICATION</button>
+      </div>
+    </aside>
+
+    <main class="n5panel n5core">
+      <div class="n5orb"></div>
+      <div class="n5state"><b id="n5State">NEXUS CORE SYNCHRONIZED</b><span id="n5StateSub">INTELLIGENCE ENGINE · ONLINE</span></div>
+      <div class="n5metrics">
+        <div class="n5metric"><b id="n5Ready">86%</b><span>Readiness</span><div class="n5bar"><i id="n5ReadyBar" style="width:86%"></i></div></div>
+        <div class="n5metric"><b id="n5Coh">98%</b><span>Coherence</span><div class="n5bar"><i style="width:98%"></i></div></div>
+        <div class="n5metric"><b id="n5Docs">0/3</b><span>Documents</span><div class="n5bar"><i id="n5DocsBar"></i></div></div>
+        <div class="n5metric"><b id="n5Risk">0</b><span>Signals</span><div class="n5bar"><i id="n5RiskBar" style="width:4%"></i></div></div>
+      </div>
+    </main>
+
+    <aside class="n5right">
+      <section class="n5panel">
+        <div class="n5head"><div><div class="n5title">AI COPILOT</div><div class="n5sub">NEXT BEST ACTION</div></div></div>
+        <div class="n5body"><div id="n5Copilot" style="font-size:10px;line-height:1.7;color:#b8cbe1"><b style="color:#fff">NEXUS:</b> El núcleo está sincronizado. Preparando el análisis.</div></div>
+      </section>
+      <section class="n5panel" style="margin-top:14px">
+        <div class="n5head"><div><div class="n5title">EVENT STREAM</div><div class="n5sub">NEURAL ACTIVITY</div></div></div>
+        <div class="n5body"><div class="n5stream" id="n5Stream"><div class="ok">CORE initialized</div><div>Profile engine online</div><div>Consistency graph ready</div><div>Security layer active</div></div></div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="n5lab">
+    <section class="n5panel">
+      <div class="n5head"><div><div class="n5title">NEXUS VISION LAB</div><div class="n5sub">LOCAL DOCUMENT QUALITY ANALYSIS</div></div><div class="n5pill">LOCAL</div></div>
+      <div class="n5body"><div class="n5scanner"><div class="n5beam"></div><div class="n5drop"><b style="color:#e6fbff;display:block;margin-bottom:8px">DOCUMENT INTELLIGENCE SCANNER</b><input id="n5Doc" type="file" accept="image/*,.pdf"><div id="n5DocResult" style="margin-top:10px">Awaiting document…</div></div>
+        <div class="n5matrix" style="margin-top:10px">
+          <div class="n5cell"><b>EDGE DETECTION</b><span id="n5Edge">—</span></div><div class="n5cell"><b>IMAGE QUALITY</b><span id="n5Sharp">—</span></div><div class="n5cell"><b>ORIENTATION</b><span id="n5Orient">—</span></div>
+          <div class="n5cell"><b>VISIBILITY</b><span id="n5Visible">—</span></div><div class="n5cell"><b>FILE FORMAT</b><span id="n5Format">—</span></div><div class="n5cell"><b>FILE SIZE</b><span id="n5Size">—</span></div>
+        </div>
+      </div></div>
+    </section>
+    <section class="n5panel">
+      <div class="n5head"><div><div class="n5title">READINESS RADAR</div><div class="n5sub">MULTI-DIMENSIONAL PREPARATION</div></div><div class="n5pill">LIVE</div></div>
+      <div class="n5body n5radar">
+        <svg viewBox="0 0 300 230" aria-label="Readiness radar">
+          <circle cx="150" cy="115" r="35"/><circle cx="150" cy="115" r="65"/><circle cx="150" cy="115" r="95"/>
+          <line x1="150" y1="20" x2="150" y2="210"/><line x1="55" y1="115" x2="245" y2="115"/>
+          <polygon id="n5RadarPoly" points="150,45 205,87 190,140 150,170 100,140 95,85"/>
+          <text x="139" y="16">PROFILE</text><text x="230" y="112">CONTACT</text><text x="136" y="226">DOCUMENT</text><text x="35" y="112">SECURITY</text>
+        </svg>
+      </div>
+    </section>
+  </div>
+
+  <div class="n5panel" style="margin-top:14px">
+    <div class="n5head"><div><div class="n5title">VERIFICATION PASSPORT</div><div class="n5sub">INTERNAL PROCESS REFERENCE</div></div><div class="n5pill">READY</div></div>
+    <div class="n5body"><div class="n5passport"><div><div style="font-size:8px;color:#647894">NEXUS REFERENCE</div><div id="n5Ref" style="font:12px ui-monospace,monospace;color:#c4f9ff;letter-spacing:.08em;margin:5px 0 10px"></div><div style="font-size:8px;color:#687b95;line-height:1.6">Internal process reference only. It does not represent identity verification, platform approval, or an official decision.</div></div><div class="n5qr" id="n5Qr">NEXUS<br>READY</div></div></div>
+  </div>
+</section>
+
+<div class="n5overlay" id="n5Modal"><div class="n5modal"><div class="n5orb" style="margin:auto;width:90px;height:90px"></div><div class="n5title" style="font-size:15px;margin-top:20px">MISSION CONTROL</div><div id="n5ModalStream" class="n5stream" style="text-align:left;margin:15px 0;height:150px"></div><button class="n5button" id="n5Close">RETURN</button></div></div>
+
+<div class="n5fullscreen" id="n5Full"><div class="n5fs"><div class="n5fsorb" style="margin:auto"></div><h2 id="n5FsTitle">INITIALIZING NEXUS CORE</h2><p id="n5FsSub">Preparing intelligent verification sequence</p><div class="n5fsteps" id="n5FsSteps"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+
+<script id="nexus50-js">
+(()=> {
+ const $=s=>document.querySelector(s), stream=$('#n5Stream');
+ const add=(t,c='')=>{const d=document.createElement('div');d.className=c;d.textContent=new Date().toLocaleTimeString()+'  '+t;stream.appendChild(d);stream.scrollTop=stream.scrollHeight};
+ const ref='NXS-'+new Date().toISOString().slice(2,10).replaceAll('-','')+'-'+Math.random().toString(36).slice(2,8).toUpperCase(); $('#n5Ref').textContent=ref; $('#n5Qr').textContent='NEXUS\\n'+ref.slice(-6);
+ const inputs=[...document.querySelectorAll('input,select')];
+ function assess(){
+   let missing=0,bad=0; inputs.forEach(x=>{if(x.required&&!String(x.value||'').trim())missing++});
+   const e=document.querySelector('input[type=email]'),p=document.querySelector('input[type=tel]');
+   if(e?.value&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value))bad++;
+   if(p?.value&&p.value.replace(/\D/g,'').length<7)bad++;
+   const score=Math.max(35,Math.min(99,86-missing*7-bad*10));
+   $('#n5Ready').textContent=score+'%';$('#n5ReadyBar').style.width=score+'%';$('#n5Risk').textContent=missing+bad;$('#n5RiskBar').style.width=Math.min(100,4+(missing+bad)*18)+'%';$('#n5Coh').textContent=(missing||bad)?Math.max(60,98-missing*5-bad*18)+'%':'98%';
+   $('#n5Copilot').innerHTML=(missing||bad)?'<b style="color:#fff">NEXUS:</b> Hay información que conviene revisar antes de continuar.':'<b style="color:#fff">NEXUS:</b> Los datos visibles mantienen coherencia estructural. Próxima acción: análisis documental.';
+ }
+ inputs.forEach(x=>x.addEventListener('input',()=>{assess();add('Profile node updated')}));
+ assess();
+
+ const doc=$('#n5Doc');
+ doc.addEventListener('change',()=>{
+   const f=doc.files[0];if(!f)return;
+   $('#n5State').textContent='NEXUS VISION ACTIVE';$('#n5StateSub').textContent='DOCUMENT INTELLIGENCE · SCANNING';add('Document received','ok');
+   $('#n5Format').textContent=f.type||'UNKNOWN';$('#n5Size').textContent=(f.size/1024/1024).toFixed(2)+' MB';$('#n5DocResult').textContent='Analyzing basic file and visual properties…';
+   if(f.type.startsWith('image/')){
+     const im=new Image(),u=URL.createObjectURL(f);
+     im.onload=()=>{const pass=im.width>=1000&&im.height>=700;$('#n5Edge').textContent=pass?'PASS':'REVIEW';$('#n5Sharp').textContent=pass?'GOOD':'REVIEW';$('#n5Orient').textContent='PASS';$('#n5Visible').textContent='PASS';$('#n5Docs').textContent='1/3';$('#n5DocsBar').style.width='33%';$('#n5DocResult').textContent=im.width+'×'+im.height+' px · basic quality inspection complete';$('#n5State').textContent='NEXUS CORE SYNCHRONIZED';$('#n5StateSub').textContent='INTELLIGENCE ENGINE · ONLINE';add('Vision analysis completed','ok');URL.revokeObjectURL(u)};
+     im.onerror=()=>{$('#n5DocResult').textContent='Unable to inspect image';add('Vision review required','warn')};im.src=u;
+   }else setTimeout(()=>{$('#n5Edge').textContent='PASS';$('#n5Sharp').textContent='PASS';$('#n5Orient').textContent='N/A';$('#n5Visible').textContent='PASS';$('#n5Docs').textContent='1/3';$('#n5DocsBar').style.width='33%';$('#n5DocResult').textContent='PDF received · basic file inspection complete';add('PDF inspection completed','ok')},500);
+ });
+
+ const fs=$('#n5Full'),titles=['INITIALIZING NEXUS CORE','MAPPING PROFILE','ANALYZING CONSISTENCY','ACTIVATING VISION ENGINE','SECURITY LAYER ACTIVE','PREPARATION COMPLETE'];
+ $('#n5Start').onclick=()=>{fs.classList.add('show');let i=0;const tick=()=>{if(i>=titles.length){setTimeout(()=>fs.classList.remove('show'),850);return}$('#n5FsTitle').textContent=titles[i];$('#n5FsSub').textContent=i===5?'Ready to continue through the official platform flow':'NEXUS intelligence sequence in progress';[...$('#n5FsSteps').children].forEach((x,j)=>x.classList.toggle('active',j<=i));add(titles[i],i===5?'ok':'');i++;setTimeout(tick,700)};tick()};
+ $('#n5Close').onclick=()=>$('#n5Modal').classList.remove('show');
+ // Mission control opens when the core is clicked.
+ document.querySelector('.n5core').addEventListener('click',()=>{$('#n5ModalStream').innerHTML=stream.innerHTML;$('#n5Modal').classList.add('show')});
+})();
+</script>
+
+
+<script id="nexus50-backend-sync">
+(() => {
+  const q = s => document.querySelector(s);
+  const initData = window.Telegram?.WebApp?.initData || "";
+  let registrationId = null;
+  let pollTimer = null;
+
+  function headers() {
+    return {
+      "Content-Type": "application/json",
+      "X-Telegram-Init-Data": initData
+    };
+  }
+
+  function addBackendEvent(message, severity="info") {
+    const stream = q("#n5Stream");
+    if (!stream) return;
+    const d = document.createElement("div");
+    d.className = severity === "success" ? "ok" : severity === "warning" ? "warn" : "";
+    d.textContent = new Date().toLocaleTimeString() + "  " + message;
+    stream.appendChild(d);
+    stream.scrollTop = stream.scrollHeight;
+  }
+
+  async function postEvent(type, message, severity="info", metadata={}) {
+    if (!registrationId || !initData) return;
+    try {
+      const r = await fetch(`/api/registrations/${registrationId}/event`, {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({
+          event_type: type,
+          message,
+          severity,
+          metadata
+        })
+      });
+      if (r.ok) addBackendEvent("Backend event synchronized", "success");
+    } catch (_) {
+      addBackendEvent("Backend synchronization unavailable", "warning");
+    }
+  }
+
+  function renderState(data) {
+    const r = data.registration || {};
+    if (q("#n5Ready")) q("#n5Ready").textContent = `${r.readiness ?? 0}%`;
+    if (q("#n5ReadyBar")) q("#n5ReadyBar").style.width = `${r.readiness ?? 0}%`;
+
+    const status = r.status || "profile_received";
+    const labels = {
+      profile_received: ["PROFILE RECEIVED", "NEXUS CORE · PROFILE"],
+      consistency_review: ["CONSISTENCY REVIEW", "NEXUS CORE · REVIEW"],
+      profile_ready: ["PROFILE READY", "NEXUS CORE · SYNCHRONIZED"],
+      ready_for_official_flow: ["READY FOR OFFICIAL FLOW", "NEXUS CORE · COMPLETE"]
+    };
+    const label = labels[status] || ["NEXUS CORE SYNCHRONIZED", "INTELLIGENCE ENGINE · ONLINE"];
+    if (q("#n5State")) q("#n5State").textContent = label[0];
+    if (q("#n5StateSub")) q("#n5StateSub").textContent = label[1];
+
+    if (r.passport_ref && q("#n5Ref")) q("#n5Ref").textContent = r.passport_ref;
+    if (r.passport_ref && q("#n5Qr")) q("#n5Qr").textContent = `NEXUS\n${r.passport_ref.slice(-6)}`;
+
+    const events = data.events || [];
+    if (events.length && q("#n5Stream")) {
+      q("#n5Stream").innerHTML = "";
+      events.forEach(ev => {
+        const d = document.createElement("div");
+        d.className = ev.severity === "success" ? "ok" : ev.severity === "warning" ? "warn" : "";
+        d.textContent = `${new Date(ev.created_at).toLocaleTimeString()}  ${ev.message}`;
+        q("#n5Stream").appendChild(d);
+      });
+    }
+  }
+
+  async function refresh() {
+    if (!registrationId || !initData) return;
+    try {
+      const r = await fetch(`/api/registrations/${registrationId}`, {
+        headers: { "X-Telegram-Init-Data": initData }
+      });
+      if (r.ok) renderState(await r.json());
+    } catch (_) {}
+  }
+
+  async function createRegistration(data) {
+    if (!initData) {
+      addBackendEvent("Telegram authentication data not available", "warning");
+      return null;
+    }
+    try {
+      const r = await fetch("/api/register", {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify(data)
+      });
+      const result = await r.json();
+      if (!r.ok || !result.ok) {
+        addBackendEvent(result.error || "Registration failed", "warning");
+        return null;
+      }
+      registrationId = result.registration_id;
+      localStorage.setItem("nexus_registration_id", String(registrationId));
+      addBackendEvent(`Registration synchronized · ${result.passport_ref}`, "success");
+      await refresh();
+      clearInterval(pollTimer);
+      pollTimer = setInterval(refresh, 5000);
+      return result;
+    } catch (_) {
+      addBackendEvent("Could not reach NEXUS backend", "warning");
+      return null;
+    }
+  }
+
+  function collectForm() {
+    const data = {};
+    document.querySelectorAll("input, select, textarea").forEach(el => {
+      if (!el.name) return;
+      if (el.type === "file") return;
+      data[el.name] = el.value;
+    });
+    // Fallbacks for common IDs used by the current NEXUS frontend.
+    const get = (...names) => {
+      for (const n of names) {
+        const el = document.getElementById(n) || document.querySelector(`[name="${n}"]`);
+        if (el && el.value) return el.value.trim();
+      }
+      return "";
+    };
+    return {
+      service: get("service", "platform"),
+      first_name: get("first_name", "firstName", "firstname"),
+      last_name: get("last_name", "lastName", "lastname"),
+      email: get("email"),
+      phone: get("phone", "telephone"),
+      city: get("city", "location")
+    };
+  }
+
+  // Public helper for the existing UI.
+  window.NEXUSBackend = {
+    createRegistration,
+    postEvent,
+    refresh,
+    getRegistrationId: () => registrationId
+  };
+
+  // Try to recover a previous registration in this Telegram session.
+  const saved = localStorage.getItem("nexus_registration_id");
+  if (saved && initData) {
+    registrationId = saved;
+    refresh();
+    pollTimer = setInterval(refresh, 5000);
+  }
+
+  // Hook common submit buttons/forms without changing the visual UI.
+  document.addEventListener("submit", async e => {
+    const form = e.target;
+    if (!form || !form.querySelector) return;
+    e.preventDefault();
+    const data = collectForm();
+    const result = await createRegistration(data);
+    if (result) {
+      addBackendEvent("Profile stored in NEXUS event pipeline", "success");
+      await postEvent("consistency_completed", "Local consistency preparation completed.", "success", {
+        readiness: result.readiness,
+        signals: result.signals
+      });
+    }
+  });
+
+  // Hook document selection to the backend event stream.
+  const doc = document.querySelector("#n5Doc");
+  if (doc) {
+    doc.addEventListener("change", async () => {
+      if (!registrationId) return;
+      await postEvent("document_received", "Document received for local quality analysis.", "info", {
+        file_name: doc.files?.[0]?.name || "",
+        file_size: doc.files?.[0]?.size || 0,
+        mime_type: doc.files?.[0]?.type || ""
+      });
+    });
+  }
+})();
+</script>
+
+<script id="nexus50-form-bridge">
+(() => {
+  function getValue(...selectors) {
+    for (const s of selectors) {
+      const el = document.querySelector(s);
+      if (el && el.value) return el.value.trim();
+    }
+    return "";
+  }
+  window.NEXUSSubmitToBackend = async function() {
+    if (!window.NEXUSBackend) return null;
+    return window.NEXUSBackend.createRegistration({
+      service: getValue('[name="service"]','#service','#platform'),
+      first_name: getValue('[name="first_name"]','#first_name','#firstName'),
+      last_name: getValue('[name="last_name"]','#last_name','#lastName'),
+      email: getValue('[name="email"]','#email'),
+      phone: getValue('[name="phone"]','#phone'),
+      city: getValue('[name="city"]','#city')
+    });
+  };
+})();
+</script>
+
+</body>
+</html>

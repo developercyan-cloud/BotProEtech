@@ -34,7 +34,7 @@ El servidor vuelve a validar todos los campos críticos:
 La foto/selfie no se sube al backend en este flujo. El servidor solo recibe el indicador `single_face_detected`.
 
 La detección de una cara no equivale a verificar la identidad. La verificación oficial queda en el proceso autorizado de la plataforma.
-### NEXUS 7.1 — Document creation workflow
+### NEXUS 7.1 — Proceso inteligente de creación de documentos
 After the client-side validation succeeds, the interface presents a futuristic creation sequence showing:
 1. Data synthesis
 2. Registration document creation

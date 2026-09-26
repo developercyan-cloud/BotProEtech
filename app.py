@@ -11,6 +11,9 @@ from datetime import datetime, timezone
 from urllib.parse import parse_qsl
 
 from flask import Flask, jsonify, request, render_template
+
+import cv2
+import numpy as np
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
@@ -266,6 +269,50 @@ def system():
         "country_locked": "United States",
         "face_check": "single_face_detected"
     })
+
+@app.post("/api/face-check")
+def face_check():
+    """Non-identifying face presence/framing check; image is processed in memory only."""
+    if not rate_limit("face-check", limit=12, window=60):
+        return jsonify({"error": "Too many face checks. Please wait a moment."}), 429
+    init = request.headers.get("X-Telegram-Init-Data", "")
+    ok, parsed = validate_init_data(init)
+    if not ok:
+        return jsonify({"error": "Invalid Telegram authentication"}), 401
+    file = request.files.get("selfie")
+    if not file:
+        return jsonify({"error": "No selfie image was received."}), 400
+    raw = file.read(8 * 1024 * 1024 + 1)
+    if len(raw) > 8 * 1024 * 1024:
+        return jsonify({"error": "The image exceeds the 8 MB limit."}), 413
+    if not raw:
+        return jsonify({"error": "The selfie image is empty."}), 400
+    try:
+        arr = np.frombuffer(raw, dtype=np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        if img is None:
+            return jsonify({"error": "The image could not be decoded."}), 400
+        h, w = img.shape[:2]
+        if w < 240 or h < 240:
+            return jsonify({"ok": False, "count": 0, "message": "La imagen es demasiado pequeña. Usa una foto de al menos 240 × 240 px."})
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        cascade_path = os.path.join(os.path.dirname(__file__), "assets", "haarcascade_frontalface_default.xml")
+        detector = cv2.CascadeClassifier(cascade_path)
+        if detector.empty():
+            return jsonify({"error": "The local face detector could not be initialized."}), 500
+        faces = detector.detectMultiScale(gray, scaleFactor=1.08, minNeighbors=6, minSize=(55,55), flags=cv2.CASCADE_SCALE_IMAGE)
+        count = len(faces)
+        if count == 0:
+            return jsonify({"ok": False, "count": 0, "message": "No se detectó una cara. Usa una selfie clara mirando hacia la cámara."})
+        if count > 1:
+            return jsonify({"ok": False, "count": count, "message": "Se detectaron varias caras. La selfie debe mostrar una sola persona."})
+        x, y, fw, fh = [int(v) for v in faces[0]]
+        area = (fw * fh) / float(w * h)
+        if area < 0.04:
+            return jsonify({"ok": False, "count": 1, "message": "La cara aparece demasiado lejos. Acércate a la cámara y toma otra foto."})
+        return jsonify({"ok": True, "count": 1, "message": "Cara detectada correctamente.", "engine": "server_local_face_quality", "stored": False})
+    except Exception:
+        return jsonify({"error": "No fue posible analizar la imagen."}), 400
 
 @app.post("/api/register")
 def register():

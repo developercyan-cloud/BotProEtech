@@ -1,103 +1,1117 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>NEXUS AI — Registro</title>
-<style>
-:root{--bg:#07090d;--card:#10141b;--line:#202733;--text:#f4f7fb;--muted:#8c96a6;--accent:#8b5cf6;--ok:#35d399}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#1c1235 0,#0b0d13 38%,#07090d 72%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
-.app{max-width:520px;margin:auto;padding:22px 18px 34px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
-.brand{font-weight:800;letter-spacing:.18em;font-size:14px}.online{font-size:11px;color:#b9c2d0;display:flex;gap:7px;align-items:center}.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 12px var(--ok)}
-.hero{text-align:center;padding:8px 0 25px}.core{width:96px;height:96px;margin:0 auto 22px;border-radius:50%;background:radial-gradient(circle,#b79cff 0,#8b5cf6 30%,#241542 64%,transparent 67%);box-shadow:0 0 55px #8b5cf655;animation:pulse 3s ease-in-out infinite}.eyebrow{font-size:11px;letter-spacing:.16em;color:#9ca7b8}.hero h1{font-size:27px;margin:9px 0 7px}.hero p{color:var(--muted);font-size:14px;margin:0}
-@keyframes pulse{50%{transform:scale(1.06);filter:brightness(1.18)}}
-.card{background:rgba(16,20,27,.86);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:14px;backdrop-filter:blur(16px)}
-.label{font-size:12px;color:var(--muted);margin-bottom:10px}.services{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.service{border:1px solid var(--line);background:#0b0f15;color:#e8edf5;border-radius:14px;padding:14px 6px;font-weight:700;font-size:12px;cursor:pointer}.service.active{border-color:#8b5cf6;background:#171126;box-shadow:0 0 0 1px #8b5cf633 inset}.service small{display:block;color:#737e8e;font-weight:500;margin-top:5px}
-.steps{display:flex;gap:5px;margin:22px 0 18px}.step{height:4px;flex:1;background:#252b35;border-radius:99px}.step.active{background:var(--accent)}
-.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}input{width:100%;background:#0b0f15;border:1px solid var(--line);color:#fff;border-radius:12px;padding:14px;font-size:14px;outline:none}input:focus{border-color:#8b5cf6}
-.cta{width:100%;border:0;border-radius:14px;padding:15px;margin-top:13px;background:linear-gradient(135deg,#9b6cff,#6d3fd4);color:#fff;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 12px 30px #8b5cf625}.cta:disabled{opacity:.5;cursor:not-allowed}
-.status{text-align:center;padding:12px 0;color:var(--muted);font-size:12px;min-height:20px}.hidden{display:none!important}
-.result{text-align:center;padding:16px 4px}.check{font-size:36px;margin-bottom:8px}.result h2{margin:0 0 8px;font-size:21px}.result p{color:var(--muted);font-size:13px;line-height:1.55}.official{margin-top:12px;font-size:12px;color:#aeb7c5}.advanced{margin-top:14px}.advanced summary{cursor:pointer;color:#7f8999;font-size:12px;padding:5px}.details{color:#929cab;font-size:12px;line-height:1.6;padding:10px 4px 0}
-@media(max-width:380px){.services{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
-</style>
+  <meta charset="utf-8">
+
+  <!-- Telegram WebApp -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>ProAccount</title>
+
+  <style>
+    :root {
+      --bg: #07090d;
+      --card: #10141b;
+      --card2: #0b0f15;
+      --line: #202733;
+      --text: #f4f7fb;
+      --muted: #8c96a6;
+      --purple: #8b5cf6;
+      --purple2: #6d3fd4;
+      --green: #35d399;
+      --red: #ff5d73;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          circle at 50% -10%,
+          #1c1235 0,
+          #0b0d13 38%,
+          #07090d 72%
+        );
+      color: var(--text);
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: auto;
+      padding: 22px 18px 40px;
+    }
+
+    /* HEADER */
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+
+    .brand {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .18em;
+    }
+
+    .online {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #b9c2d0;
+      font-size: 11px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    /* HERO */
+
+    .hero {
+      text-align: center;
+      padding: 8px 0 25px;
+    }
+
+    .core {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle,
+          #c6b1ff 0,
+          #8b5cf6 30%,
+          #241542 62%,
+          transparent 67%
+        );
+
+      box-shadow: 0 0 55px #8b5cf655;
+
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      50% {
+        transform: scale(1.06);
+        filter: brightness(1.18);
+      }
+    }
+
+    .eyebrow {
+      color: #9ca7b8;
+      font-size: 10px;
+      letter-spacing: .16em;
+    }
+
+    .hero h1 {
+      margin: 8px 0 7px;
+      font-size: 28px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* CARD */
+
+    .card {
+      margin-top: 12px;
+      padding: 18px;
+
+      background: rgba(16, 20, 27, .88);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+
+      backdrop-filter: blur(16px);
+    }
+
+    .label {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* SERVICES */
+
+    .services {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .service {
+      padding: 14px 6px;
+
+      border: 1px solid var(--line);
+      border-radius: 14px;
+
+      background: var(--card2);
+      color: #e8edf5;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .service small {
+      display: block;
+      margin-top: 5px;
+
+      color: #737e8e;
+      font-weight: 500;
+    }
+
+    .service.active {
+      border-color: var(--purple);
+      background: #171126;
+
+      box-shadow:
+        0 0 0 1px #8b5cf633 inset,
+        0 0 20px #8b5cf622;
+    }
+
+    /* STEPS */
+
+    .steps {
+      display: flex;
+      gap: 5px;
+      margin: 22px 0 18px;
+    }
+
+    .step {
+      flex: 1;
+      height: 4px;
+
+      border-radius: 99px;
+      background: #252b35;
+
+      transition: .3s;
+    }
+
+    .step.active {
+      background: var(--purple);
+      box-shadow: 0 0 10px #8b5cf655;
+    }
+
+    /* FORM */
+
+    .form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    input {
+      width: 100%;
+
+      padding: 14px;
+
+      border: 1px solid var(--line);
+      border-radius: 13px;
+
+      background: #0b0f15;
+      color: #fff;
+
+      font-size: 14px;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #697384;
+    }
+
+    input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px #8b5cf612;
+    }
+
+    /* BUTTON */
+
+    .cta {
+      width: 100%;
+      margin-top: 13px;
+      padding: 15px;
+
+      border: 0;
+      border-radius: 14px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #9b6cff,
+          #6d3fd4
+        );
+
+      color: #fff;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 12px 30px #8b5cf625;
+    }
+
+    .cta:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    /* STATUS */
+
+    .status {
+      min-height: 22px;
+      padding-top: 11px;
+
+      color: var(--muted);
+
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .status.error {
+      color: var(--red);
+    }
+
+    .status.success {
+      color: var(--green);
+    }
+
+    /* RESULT */
+
+    .result {
+      padding: 16px 4px;
+      text-align: center;
+    }
+
+    .check {
+      margin-bottom: 8px;
+      font-size: 38px;
+      color: var(--green);
+    }
+
+    .result h2 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+
+    .result p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .official {
+      margin-top: 12px;
+
+      color: #aeb7c5;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* ADVANCED */
+
+    .advanced {
+      margin-top: 14px;
+    }
+
+    .advanced summary {
+      padding: 5px;
+
+      color: #7f8999;
+      font-size: 12px;
+
+      cursor: pointer;
+    }
+
+    .details {
+      padding: 10px 4px 0;
+
+      color: #929cab;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* TELEGRAM ERROR */
+
+    .telegram-warning {
+      display: none;
+
+      margin-top: 15px;
+      padding: 13px;
+
+      border: 1px solid #5b2730;
+      border-radius: 13px;
+
+      background: #1a0d11;
+      color: #ff9aaa;
+
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 380px) {
+
+      .services {
+        grid-template-columns: 1fr;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
 <div class="app">
-  <header class="top"><div class="brand">NEXUS AI</div><div class="online"><span class="dot"></span> SISTEMA LISTO</div></header>
+
+  <!-- HEADER -->
+
+  <header class="top">
+
+    <div class="brand">
+      NEXUS AI
+    </div>
+
+    <div class="online">
+      <span class="dot"></span>
+      SISTEMA LISTO
+    </div>
+
+  </header>
+
+
+  <!-- HERO -->
 
   <section class="hero">
+
     <div class="core"></div>
-    <div class="eyebrow">PREPARACIÓN INTELIGENTE</div>
-    <h1>Comencemos</h1>
-    <p>Completa tu información para preparar tu registro.</p>
-  </section>
 
-  <section class="card" id="mainCard">
-    <div class="label">¿Qué plataforma quieres preparar?</div>
-    <div class="services">
-      <button class="service active" data-service="uber">UBER<small>Driver</small></button>
-      <button class="service" data-service="doordash">DOORDASH<small>Dasher</small></button>
-      <button class="service" data-service="lyft">LYFT<small>Driver</small></button>
+    <div class="eyebrow">
+      PREPARACIÓN INTELIGENTE
     </div>
 
-    <div class="steps"><span class="step active"></span><span class="step"></span><span class="step"></span><span class="step"></span></div>
+    <h1>
+      Comencemos
+    </h1>
 
-    <div id="formStep">
-      <div class="label">1 · Información básica</div>
-      <div class="form">
-        <div class="row"><input id="first" placeholder="Nombre"><input id="last" placeholder="Apellido"></div>
-        <input id="email" type="email" placeholder="Correo electrónico">
-        <input id="phone" placeholder="Teléfono">
-        <input id="city" placeholder="Ciudad">
+    <p>
+      Completa tu información para preparar tu registro.
+    </p>
+
+  </section>
+
+
+  <!-- MAIN CARD -->
+
+  <section class="card">
+
+    <!-- PLATFORM -->
+
+    <div id="formContainer">
+
+      <div class="label">
+        ¿Qué plataforma quieres preparar?
       </div>
-      <button class="cta" id="continue">CONTINUAR</button>
-      <div class="status" id="status"></div>
+
+      <div class="services">
+
+        <button
+          class="service active"
+          data-service="uber"
+          type="button">
+          UBER
+          <small>Driver</small>
+        </button>
+
+        <button
+          class="service"
+          data-service="doordash"
+          type="button">
+          DOORDASH
+          <small>Dasher</small>
+        </button>
+
+        <button
+          class="service"
+          data-service="lyft"
+          type="button">
+          LYFT
+          <small>Driver</small>
+        </button>
+
+      </div>
+
+
+      <!-- PROGRESS -->
+
+      <div class="steps">
+
+        <span class="step active"></span>
+        <span class="step"></span>
+        <span class="step"></span>
+        <span class="step"></span>
+
+      </div>
+
+
+      <!-- FORM -->
+
+      <div id="formStep">
+
+        <div class="label">
+          1 · Información básica
+        </div>
+
+        <div class="form">
+
+          <div class="row">
+
+            <input
+              id="first"
+              type="text"
+              autocomplete="given-name"
+              placeholder="Nombre">
+
+            <input
+              id="last"
+              type="text"
+              autocomplete="family-name"
+              placeholder="Apellido">
+
+          </div>
+
+          <input
+            id="email"
+            type="email"
+            autocomplete="email"
+            placeholder="Correo electrónico">
+
+          <input
+            id="phone"
+            type="tel"
+            autocomplete="tel"
+            placeholder="Teléfono">
+
+          <input
+            id="city"
+            type="text"
+            autocomplete="address-level2"
+            placeholder="Ciudad">
+
+        </div>
+
+
+        <button
+          class="cta"
+          id="continue"
+          type="button">
+
+          CONTINUAR
+
+        </button>
+
+
+        <div
+          id="status"
+          class="status">
+        </div>
+
+
+        <div
+          id="telegramWarning"
+          class="telegram-warning">
+
+          Esta aplicación debe abrirse desde Telegram
+          para validar tu sesión de forma segura.
+
+        </div>
+
+      </div>
+
     </div>
 
-    <div id="result" class="result hidden">
-      <div class="check">✓</div>
-      <h2>Información preparada</h2>
-      <p id="resultText">La información fue revisada localmente y está lista para continuar con el proceso correspondiente.</p>
-      <div class="official">La verificación y aprobación final corresponden a la plataforma seleccionada.</div>
-      <button class="cta" id="officialBtn">CONTINUAR AL SITIO OFICIAL</button>
+
+    <!-- RESULT -->
+
+    <div
+      id="result"
+      class="result hidden">
+
+      <div class="check">
+        ✓
+      </div>
+
+      <h2>
+        Información preparada
+      </h2>
+
+      <p id="resultText">
+        La información fue revisada y está lista
+        para continuar con el proceso.
+      </p>
+
+      <div class="official">
+
+        La verificación y aprobación final
+        corresponden a la plataforma seleccionada.
+
+      </div>
+
+      <button
+        class="cta"
+        id="officialBtn"
+        type="button">
+
+        CONTINUAR AL SITIO OFICIAL
+
+      </button>
+
     </div>
+
   </section>
+
+
+  <!-- ADVANCED -->
 
   <details class="advanced">
-    <summary>Detalles avanzados</summary>
-    <div class="details">NEXUS realiza controles básicos de formato y consistencia. No solicita contraseñas, códigos OTP ni almacena credenciales.</div>
+
+    <summary>
+      Detalles avanzados
+    </summary>
+
+    <div class="details">
+
+      NEXUS realiza controles básicos de formato
+      y consistencia.
+
+      No solicita contraseñas,
+      códigos OTP ni almacena credenciales.
+
+    </div>
+
   </details>
+
 </div>
 
+
 <script>
-let service="uber";
-const $=id=>document.getElementById(id);
-document.querySelectorAll(".service").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".service").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active"); service=b.dataset.service;
-});
-function telegramData(){
-  return window.Telegram?.WebApp?.initData || "";
-}
-async function register(){
-  const values={first_name:$("first").value.trim(),last_name:$("last").value.trim(),email:$("email").value.trim(),phone:$("phone").value.trim(),city:$("city").value.trim(),service};
-  const missing=Object.entries(values).some(([k,v])=>k!=="service"&&!v);
-  if(missing){$("status").textContent="Completa todos los campos para continuar.";return}
-  $("continue").disabled=true;$("status").textContent="Revisando información…";
-  const initData=telegramData();
-  try{
-    const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":initData},body:JSON.stringify(values)});
-    const data=await r.json();
-    if(!r.ok) throw new Error(data.error||"No fue posible procesar la información.");
-    $("formStep").classList.add("hidden");$("result").classList.remove("hidden");
-    document.querySelectorAll(".step").forEach(x=>x.classList.add("active"));
-    $("resultText").textContent=`La información para ${service.toUpperCase()} fue recibida y revisada.`;
-    const urls={uber:"https://www.uber.com/",doordash:"https://www.doordash.com/",lyft:"https://www.lyft.com/"};
-    $("officialBtn").onclick=()=>location.href=urls[service];
-  }catch(e){$("status").textContent=e.message;$("continue").disabled=false}
-}
-$("continue").onclick=register;
-if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand()}
+
+/* =========================================================
+   NEXUS AI — TELEGRAM INITIALIZATION
+   ========================================================= */
+
+(function () {
+
+  const tg = window.Telegram &&
+             window.Telegram.WebApp
+             ? window.Telegram.WebApp
+             : null;
+
+  /*
+   * Inicializamos Telegram inmediatamente.
+   */
+
+  if (tg) {
+
+    tg.ready();
+
+    tg.expand();
+
+    /*
+     * Permite que Telegram ajuste el color
+     * de la interfaz según el WebApp.
+     */
+
+    if (tg.setHeaderColor) {
+      tg.setHeaderColor("#10141b");
+    }
+
+    if (tg.setBackgroundColor) {
+      tg.setBackgroundColor("#07090d");
+    }
+
+  }
+
+
+  /* =======================================================
+     VARIABLES
+     ======================================================= */
+
+  let selectedService = "uber";
+
+
+  const first =
+    document.getElementById("first");
+
+  const last =
+    document.getElementById("last");
+
+  const email =
+    document.getElementById("email");
+
+  const phone =
+    document.getElementById("phone");
+
+  const city =
+    document.getElementById("city");
+
+  const continueButton =
+    document.getElementById("continue");
+
+  const status =
+    document.getElementById("status");
+
+  const result =
+    document.getElementById("result");
+
+  const formContainer =
+    document.getElementById("formContainer");
+
+  const resultText =
+    document.getElementById("resultText");
+
+  const officialButton =
+    document.getElementById("officialBtn");
+
+  const telegramWarning =
+    document.getElementById("telegramWarning");
+
+
+  /* =======================================================
+     PLATFORM SELECTION
+     ======================================================= */
+
+  document
+    .querySelectorAll(".service")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        document
+          .querySelectorAll(".service")
+          .forEach(item => {
+
+            item.classList.remove("active");
+
+          });
+
+        button.classList.add("active");
+
+        selectedService =
+          button.dataset.service;
+
+      });
+
+    });
+
+
+  /* =======================================================
+     TELEGRAM AUTH DATA
+     ======================================================= */
+
+  function getTelegramInitData() {
+
+    if (
+      window.Telegram &&
+      window.Telegram.WebApp
+    ) {
+
+      return window.Telegram.WebApp.initData || "";
+
+    }
+
+    return "";
+
+  }
+
+
+  /* =======================================================
+     CHECK TELEGRAM
+     ======================================================= */
+
+  function checkTelegram() {
+
+    const initData =
+      getTelegramInitData();
+
+    if (!initData) {
+
+      telegramWarning.style.display =
+        "block";
+
+      return false;
+
+    }
+
+    telegramWarning.style.display =
+      "none";
+
+    return true;
+
+  }
+
+
+  /* =======================================================
+     VALIDATION
+     ======================================================= */
+
+  function validateForm() {
+
+    const fields = [
+      first,
+      last,
+      email,
+      phone,
+      city
+    ];
+
+    for (const field of fields) {
+
+      if (!field.value.trim()) {
+
+        field.focus();
+
+        status.className =
+          "status error";
+
+        status.textContent =
+          "Completa todos los campos para continuar.";
+
+        return false;
+
+      }
+
+    }
+
+
+    const emailValue =
+      email.value.trim();
+
+    const emailValid =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        .test(emailValue);
+
+    if (!emailValid) {
+
+      email.focus();
+
+      status.className =
+        "status error";
+
+      status.textContent =
+        "Introduce un correo electrónico válido.";
+
+      return false;
+
+    }
+
+
+    return true;
+
+  }
+
+
+  /* =======================================================
+     REGISTER
+     ======================================================= */
+
+  async function register() {
+
+    status.className =
+      "status";
+
+    status.textContent = "";
+
+
+    if (!checkTelegram()) {
+
+      status.className =
+        "status error";
+
+      status.textContent =
+        "Abre NEXUS desde Telegram para continuar.";
+
+      return;
+
+    }
+
+
+    if (!validateForm()) {
+      return;
+    }
+
+
+    continueButton.disabled =
+      true;
+
+    continueButton.textContent =
+      "REVISANDO…";
+
+    status.className =
+      "status";
+
+    status.textContent =
+      "Revisando información…";
+
+
+    const initData =
+      getTelegramInitData();
+
+
+    /*
+     * IMPORTANTE:
+     *
+     * El backend espera initData
+     * en X-Telegram-Init-Data.
+     */
+
+    const payload = {
+
+      service:
+        selectedService,
+
+      first_name:
+        first.value.trim(),
+
+      last_name:
+        last.value.trim(),
+
+      email:
+        email.value.trim(),
+
+      phone:
+        phone.value.trim(),
+
+      city:
+        city.value.trim()
+
+    };
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/register",
+          {
+
+            method: "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json",
+
+              "X-Telegram-Init-Data":
+                initData
+
+            },
+
+            body:
+              JSON.stringify(payload)
+
+          }
+        );
+
+
+      let data = {};
+
+      try {
+
+        data =
+          await response.json();
+
+      } catch (_) {
+
+        data = {};
+
+      }
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "No fue posible procesar la información."
+        );
+
+      }
+
+
+      /* ================================================
+         SUCCESS
+         ================================================ */
+
+      const names = {
+
+        uber: "UBER",
+
+        doordash: "DOORDASH",
+
+        lyft: "LYFT"
+
+      };
+
+
+      resultText.textContent =
+        `La información para ${names[selectedService]} fue recibida y revisada.`;
+
+
+      formContainer
+        .classList
+        .add("hidden");
+
+
+      result
+        .classList
+        .remove("hidden");
+
+
+      /*
+       * Completar visualmente los cuatro pasos.
+       */
+
+      document
+        .querySelectorAll(".step")
+        .forEach(step => {
+
+          step.classList.add("active");
+
+        });
+
+
+      status.textContent = "";
+
+
+      /*
+       * Sitios oficiales
+       */
+
+      const officialUrls = {
+
+        uber:
+          "https://www.uber.com/",
+
+        doordash:
+          "https://www.doordash.com/",
+
+        lyft:
+          "https://www.lyft.com/"
+
+      };
+
+
+      officialButton.onclick =
+        function () {
+
+          window.location.href =
+            officialUrls[selectedService];
+
+        };
+
+
+    } catch (error) {
+
+      console.error(
+        "NEXUS registration error:",
+        error
+      );
+
+
+      status.className =
+        "status error";
+
+      status.textContent =
+        error.message ||
+        "Ocurrió un error.";
+
+      continueButton.disabled =
+        false;
+
+      continueButton.textContent =
+        "CONTINUAR";
+
+    }
+
+  }
+
+
+  /* =======================================================
+     BUTTON
+     ======================================================= */
+
+  continueButton.addEventListener(
+    "click",
+    register
+  );
+
+
+  /* =======================================================
+     INITIAL TELEGRAM CHECK
+     ======================================================= */
+
+  /*
+   * No mostramos error automáticamente.
+   * Solo comprobamos la disponibilidad.
+   */
+
+  if (!tg) {
+
+    telegramWarning.style.display =
+      "block";
+
+  }
+
+})();
+
 </script>
+
 </body>
 </html>

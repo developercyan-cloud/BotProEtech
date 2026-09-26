@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Account Setup Assistant</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg:#080b12; --card:#111724; --line:#273149;
+  --text:#f7f9fc; --muted:#8f9bad; --accent:#5865f2;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:radial-gradient(circle at top,#18243b 0,#080b12 48%);
+  color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100vh
+}
+.wrap{max-width:460px;margin:auto;padding:20px 16px 40px}
+.header{text-align:center;padding:20px 0 24px}
+.logo{
+  width:64px;height:64px;margin:auto;border-radius:20px;
+  display:grid;place-items:center;background:linear-gradient(135deg,#5865f2,#00b8ff);
+  font-weight:800;font-size:25px;box-shadow:0 12px 35px #0008
+}
+h1{font-size:24px;margin:16px 0 7px}
+.sub{color:var(--muted);font-size:13px;line-height:1.5}
+.card{
+  background:rgba(17,23,36,.94);border:1px solid var(--line);
+  border-radius:20px;padding:19px;margin-bottom:14px
+}
+h2{font-size:18px;margin:0 0 7px}
+.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.service{
+  display:flex;align-items:center;gap:13px;background:#0c121e;
+  border:1px solid var(--line);padding:15px;border-radius:15px;
+  margin-top:11px;cursor:pointer
+}
+.service:active{transform:scale(.99)}
+.badge{
+  width:43px;height:43px;border-radius:12px;background:#202b42;
+  display:grid;place-items:center;font-weight:800
+}
+.info{flex:1}.name{font-weight:700}.desc{font-size:12px;color:var(--muted);margin-top:3px}
+.arrow{font-size:23px;color:#758198}
+.progress{display:flex;gap:5px;margin:17px 0}
+.progress i{height:4px;flex:1;background:#29334a;border-radius:5px}
+.progress i.on{background:var(--accent)}
+label{display:block;color:#aab4c5;font-size:12px;margin:13px 0 6px}
+input{
+  width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
+  background:#090e17;color:#fff;outline:none;font-size:15px
+}
+input:focus{border-color:var(--accent)}
+.btn{
+  width:100%;border:0;border-radius:13px;padding:14px;margin-top:17px;
+  background:linear-gradient(135deg,#5865f2,#397cff);color:#fff;font-weight:800
+}
+.back{background:#1b2435;margin-bottom:8px}
+.hidden{display:none}
+.status{display:flex;gap:11px;align-items:center;padding:13px;background:#0c121e;border-radius:13px;margin-top:10px}
+.dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#19b97a}
+.dot.pending{background:#2a354b;color:#93a0b6}
+.small{font-size:12px;color:var(--muted);margin-top:3px}
+.notice{
+  margin-top:12px;padding:11px;border-radius:11px;background:#0b101a;
+  color:#9da8ba;font-size:11px;line-height:1.45
+}
+.err{color:#ff8f8f;font-size:12px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">AI</div>
+    <h1>Account Setup Assistant</h1>
+    <div class="sub">Complete your registration information directly inside Telegram.</div>
+  </div>
+
+  <section id="step1" class="card">
+    <h2>Select a service</h2>
+    <div class="muted">Choose the platform you want to set up.</div>
+
+    <div class="service" onclick="choose('Uber')">
+      <div class="badge">U</div><div class="info"><div class="name">Uber</div><div class="desc">Registration information</div></div><div class="arrow">›</div>
+    </div>
+    <div class="service" onclick="choose('DoorDash')">
+      <div class="badge">D</div><div class="info"><div class="name">DoorDash</div><div class="desc">Registration information</div></div><div class="arrow">›</div>
+    </div>
+    <div class="service" onclick="choose('Lyft')">
+      <div class="badge">L</div><div class="info"><div class="name">Lyft</div><div class="desc">Registration information</div></div><div class="arrow">›</div>
+    </div>
+  </section>
+
+  <section id="step2" class="card hidden">
+    <button class="btn back" onclick="show(1)">← Back</button>
+    <h2 id="title">Registration</h2>
+    <div class="progress"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+
+    <label>First name *</label>
+    <input id="first_name" autocomplete="given-name" placeholder="First name">
+
+    <label>Last name *</label>
+    <input id="last_name" autocomplete="family-name" placeholder="Last name">
+
+    <label>Email *</label>
+    <input id="email" type="email" autocomplete="email" placeholder="name@example.com">
+
+    <label>Phone *</label>
+    <input id="phone" type="tel" autocomplete="tel" placeholder="+1 555 000 0000">
+
+    <label>City</label>
+    <input id="city" autocomplete="address-level2" placeholder="City">
+
+    <div id="error" class="err"></div>
+
+    <button class="btn" onclick="submitForm()">Continue</button>
+
+    <div class="notice">
+      Do not enter passwords, one-time verification codes, banking PINs, or other authentication secrets.
+      Any identity or eligibility verification must be completed through the platform's official process.
+    </div>
+  </section>
+
+  <section id="step3" class="card hidden">
+    <h2>Registration status</h2>
+    <div class="progress"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+
+    <div class="status">
+      <div class="dot">✓</div>
+      <div><b>Information received</b><div class="small">Your information was securely submitted.</div></div>
+    </div>
+
+    <div class="status">
+      <div class="dot pending">•</div>
+      <div><b>Official verification</b><div class="small">Complete any required verification through the platform.</div></div>
+    </div>
+
+    <button class="btn" onclick="openOfficial()">Open official registration</button>
+    <button class="btn back" onclick="show(1)">Start another</button>
+  </section>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+let service = "";
+
+const official = {
+  Uber: "https://www.uber.com/",
+  DoorDash: "https://www.doordash.com/",
+  Lyft: "https://www.lyft.com/"
+};
+
+function show(n){
+  [1,2,3].forEach(i => document.getElementById("step"+i).classList.toggle("hidden", i!==n));
+}
+
+function choose(s){
+  service=s;
+  document.getElementById("title").textContent=s+" Registration";
+  document.getElementById("error").textContent="";
+  show(2);
+}
+
+async function submitForm(){
+  const data={
+    service,
+    first_name:document.getElementById("first_name").value.trim(),
+    last_name:document.getElementById("last_name").value.trim(),
+    email:document.getElementById("email").value.trim(),
+    phone:document.getElementById("phone").value.trim(),
+    city:document.getElementById("city").value.trim(),
+    initData:tg ? tg.initData : ""
+  };
+
+  if(!data.first_name || !data.last_name || !data.email || !data.phone){
+    document.getElementById("error").textContent="Please complete all required fields.";
+    return;
+  }
+
+  const r=await fetch("/api/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+
+  const result=await r.json();
+
+  if(!result.ok){
+    document.getElementById("error").textContent=result.error || "Unable to submit.";
+    return;
+  }
+
+  show(3);
+}
+
+function openOfficial(){
+  window.open(official[service], "_blank");
+}
+</script>
+</body>
+</html>

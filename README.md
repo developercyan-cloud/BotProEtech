@@ -84,3 +84,10 @@ Comportamiento:
 5. Los intentos de código están limitados por IP en la web y a cinco intentos por conversación del bot.
 
 Después de añadir `ACCESS_CODE` en Railway, haz un nuevo deploy. Si la variable falta, el servicio se detiene de forma segura y lo indica en los logs.
+
+
+## NEXUS 8.7 — Solicitar código en cada apertura
+
+La Mini App ya no reutiliza tokens guardados ni acepta el token de lanzamiento como forma de saltarse la pantalla de acceso. Al abrir o volver a abrir la Mini App, solicita el código y emite un token nuevo para esa sesión. El token local también se elimina cuando la página se oculta o se descarga.
+
+Nota: el código del bot de Telegram continúa funcionando como primer control de acceso; según el flujo actual, el usuario puede tener que introducir el código en Telegram y después en la Mini App.

@@ -734,6 +734,9 @@ if(!tg)$("warning").style.display="block";
     sessionStorage.setItem("nexus_access_token",token);
     document.body.classList.add("access-granted");
     gate.setAttribute("aria-hidden","true");
+    gate.style.display="none";
+    const app=document.querySelector(".app");
+    if(app) app.style.display="";
     input.value="";
   }
   async function verifyToken(token){

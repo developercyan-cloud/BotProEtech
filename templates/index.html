@@ -74,8 +74,48 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
 .ssn-status.ok{color:#69e5b8}.ssn-status.bad{color:#ff8d9d}
 </style>
 
+
+<style id="nexus-access-gate-style">
+body:not(.access-granted) .app{display:none!important}
+.access-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(520px 360px at 50% 22%,rgba(115,67,255,.24),transparent 70%),linear-gradient(155deg,#080a12,#05060b 72%);color:#f7f8fc;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body.access-granted .access-gate{display:none}
+.gate-card{width:min(100%,420px);padding:30px 24px 24px;border:1px solid #29243f;border-radius:26px;background:linear-gradient(160deg,rgba(18,21,34,.98),rgba(9,11,19,.98));box-shadow:0 24px 90px #0009,0 0 55px #7847ff14}
+.gate-brand{display:flex;align-items:center;gap:11px;font-size:18px;font-weight:900;letter-spacing:.14em}
+.gate-purple{color:#a58bff}.gate-orb{width:13px;height:13px;border-radius:50%;background:#9868ff;box-shadow:0 0 24px #8b5cf6;animation:gatePulse 2s ease-in-out infinite}
+.gate-eyebrow{margin-top:30px;font-size:10px;letter-spacing:.22em;color:#a99adf}
+.gate-card h1{margin:10px 0 8px;font-size:29px;letter-spacing:-.04em}
+.gate-copy{margin:0 0 24px;color:#9ca6b8;font-size:14px;line-height:1.6}
+.gate-card label{display:block;margin-bottom:8px;font-size:12px;color:#d9d9e6;font-weight:700}
+.gate-card input{display:block;width:100%;height:52px;border:1px solid #293044;border-radius:13px;padding:0 15px;background:#080b13;color:#fff;outline:none;box-sizing:border-box}
+.gate-card input:focus{border-color:#9868ff;box-shadow:0 0 0 3px #8b5cf622}
+.gate-card button{width:100%;height:52px;margin-top:12px;border:0;border-radius:13px;background:linear-gradient(100deg,#9a68ff,#6732d7);color:white;font-weight:900;letter-spacing:.04em;cursor:pointer}
+.gate-card button:disabled{opacity:.65;cursor:wait}
+.gate-status{min-height:20px;margin-top:12px;font-size:12px;color:#ff9aaa;line-height:1.5}
+.gate-status.ok{color:#63e6b4}
+.gate-foot{display:flex;align-items:center;gap:8px;margin-top:22px;padding-top:16px;border-top:1px solid #252a39;color:#7f899d;font-size:10px;letter-spacing:.08em}
+.gate-lock{color:#a58bff}
+@keyframes gatePulse{0%,100%{transform:scale(.9);opacity:.8}50%{transform:scale(1.15);opacity:1}}
+</style>
+
 </head>
 <body>
+
+<div id="accessGate" class="access-gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <div class="gate-brand"><span class="gate-orb"></span><span>PRO<span class="gate-purple">ACCOUNT</span></span></div>
+    <div class="gate-eyebrow">NEXUS AI · ACCESO PRIVADO</div>
+    <h1 id="gateTitle">Código de acceso</h1>
+    <p class="gate-copy">Introduce el código autorizado para acceder a la plataforma.</p>
+    <form id="accessForm" autocomplete="off">
+      <label for="accessCode">Código de acceso</label>
+      <input id="accessCode" name="access_code" type="password" autocomplete="one-time-code" required maxlength="128" placeholder="Introduce tu código">
+      <button id="accessSubmit" type="submit">DESBLOQUEAR ACCESO</button>
+      <div id="accessStatus" class="gate-status" aria-live="polite"></div>
+    </form>
+    <div class="gate-foot"><span class="gate-lock">◆</span> Acceso restringido · Sesión temporal</div>
+  </div>
+</div>
+
 <div class="app">
 <header class="top"><div class="brand">PRO<span>ACCOUNT</span></div><div class="statusTop"><i class="dot"></i> NEXUS EN LÍNEA</div></header>
 
@@ -125,8 +165,10 @@ button,input,select{font:inherit}.app{max-width:560px;margin:auto;padding:18px 1
            autocomplete="off" maxlength="11" placeholder="XXX-XX-XXXX">
     <button type="button" id="ssnToggle" class="ssn-toggle">Mostrar</button>
   </div>
-  <div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN.</div>
-  <div id="ssnStatus" class="ssn-status" aria-live="polite"></div>
+  
+
+<div id="ssnHelp" class="field-help">Ingresa los 9 dígitos de tu SSN.</div>
+<div id="ssnStatus" class="ssn-status" aria-live="polite"></div>
 </div>
 
 <div class="sectionLabel">
@@ -272,7 +314,7 @@ async function validateSelfieFile(file){
     fd.append("selfie",file,file.name||"selfie.jpg");
     const r=await fetch("/api/face-check",{
       method:"POST",
-      headers:{"X-Telegram-Init-Data":tg.initData},
+      headers:{"X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},
       body:fd
     });
     const data=await r.json().catch(()=>({}));
@@ -426,7 +468,7 @@ const payload={service,first_name:fields.first.value.trim(),last_name:fields.las
 selfie_face_check:(selfieResult?.ok?"single_face_detected":"not_checked")
 };
 try{
-const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData},body:JSON.stringify(payload)});
+const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify(payload)});
 const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible procesar la información.");
 document.dispatchEvent(new CustomEvent("nexus:registration-success",{detail:{service:service}}));
 }catch(e){$("status").className="status error";$("status").textContent=e.message;$("continue").disabled=false;$("continue").textContent="VALIDAR Y CONTINUAR";}
@@ -671,6 +713,69 @@ if(!tg)$("warning").style.display="block";
     const show=input.type==='password';input.type=show?'text':'password';toggle.textContent=show?'Ocultar':'Mostrar';
   });
   window.NEXUS_SSN_VALID=check;
+})();
+</script>
+
+
+<script id="nexus-access-gate-script">
+(function(){
+  const gate=document.getElementById("accessGate");
+  const form=document.getElementById("accessForm");
+  const input=document.getElementById("accessCode");
+  const button=document.getElementById("accessSubmit");
+  const status=document.getElementById("accessStatus");
+  if(!gate||!form)return;
+
+  function setStatus(message,kind){
+    status.textContent=message||"";
+    status.className="gate-status"+(kind?" "+kind:"");
+  }
+  function unlock(token){
+    sessionStorage.setItem("nexus_access_token",token);
+    document.body.classList.add("access-granted");
+    gate.setAttribute("aria-hidden","true");
+    input.value="";
+  }
+  async function verifyToken(token){
+    const r=await fetch("/api/access/verify",{headers:{"X-Nexus-Access-Token":token}});
+    return r.ok;
+  }
+  async function boot(){
+    let token=sessionStorage.getItem("nexus_access_token");
+    const query=new URLSearchParams(location.search);
+    const botToken=query.get("nexus_access");
+    if(botToken){
+      token=botToken;
+      query.delete("nexus_access");
+      const cleanUrl=location.pathname+(query.toString()?"?"+query.toString():"")+location.hash;
+      history.replaceState(null,"",cleanUrl);
+      sessionStorage.setItem("nexus_access_token",token);
+    }
+    if(token){
+      try{
+        if(await verifyToken(token)){unlock(token);return;}
+      }catch(e){}
+      sessionStorage.removeItem("nexus_access_token");
+    }
+    document.body.classList.remove("access-granted");
+    gate.style.display="flex";
+    setTimeout(()=>input.focus(),150);
+  }
+  form.addEventListener("submit",async function(e){
+    e.preventDefault();
+    const code=input.value.trim();
+    if(!code){setStatus("Introduce el código de acceso.");return;}
+    button.disabled=true;button.textContent="COMPROBANDO CÓDIGO…";setStatus("Verificando autorización…");
+    try{
+      const r=await fetch("/api/access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code})});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok||!data.token)throw new Error(data.error||"Código incorrecto. Inténtalo de nuevo.");
+      setStatus("Acceso autorizado.", "ok");
+      unlock(data.token);
+    }catch(err){setStatus(err.message||"No se pudo verificar el código.");}
+    finally{button.disabled=false;button.textContent="DESBLOQUEAR ACCESO";}
+  });
+  boot();
 })();
 </script>
 

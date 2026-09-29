@@ -741,24 +741,19 @@ if(!tg)$("warning").style.display="block";
     return r.ok;
   }
   async function boot(){
-    let token=sessionStorage.getItem("nexus_access_token");
+    // Require the code on every Mini App opening. Do not trust a token saved by a prior opening
+    // or a reusable token embedded in the Telegram launch URL.
+    sessionStorage.removeItem("nexus_access_token");
     const query=new URLSearchParams(location.search);
-    const botToken=query.get("nexus_access");
-    if(botToken){
-      token=botToken;
+    if(query.has("nexus_access")){
       query.delete("nexus_access");
       const cleanUrl=location.pathname+(query.toString()?"?"+query.toString():"")+location.hash;
       history.replaceState(null,"",cleanUrl);
-      sessionStorage.setItem("nexus_access_token",token);
-    }
-    if(token){
-      try{
-        if(await verifyToken(token)){unlock(token);return;}
-      }catch(e){}
-      sessionStorage.removeItem("nexus_access_token");
     }
     document.body.classList.remove("access-granted");
     gate.style.display="flex";
+    gate.setAttribute("aria-hidden","false");
+    setStatus("Introduce el código para iniciar esta sesión.");
     setTimeout(()=>input.focus(),150);
   }
   form.addEventListener("submit",async function(e){
@@ -774,6 +769,14 @@ if(!tg)$("warning").style.display="block";
       unlock(data.token);
     }catch(err){setStatus(err.message||"No se pudo verificar el código.");}
     finally{button.disabled=false;button.textContent="DESBLOQUEAR ACCESO";}
+  });
+  document.addEventListener("visibilitychange",function(){
+    if(document.visibilityState==="hidden"){
+      sessionStorage.removeItem("nexus_access_token");
+    }
+  });
+  window.addEventListener("pagehide",function(){
+    sessionStorage.removeItem("nexus_access_token");
   });
   boot();
 })();

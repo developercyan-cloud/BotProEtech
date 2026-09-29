@@ -15,17 +15,21 @@ from flask import Flask, jsonify, request, render_template
 import cv2
 import numpy as np
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "").strip()
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "").strip()
+ACCESS_CODE = os.environ.get("ACCESS_CODE", "").strip()
+ACCESS_TOKEN_SECRET = os.environ.get("ACCESS_TOKEN_SECRET", "").strip() or (BOT_TOKEN + ":" + ACCESS_CODE)
 DATABASE = os.environ.get("DATABASE_PATH", "data.db")
 PORT = int(os.environ.get("PORT", "8080"))
 MAX_BODY = int(os.environ.get("MAX_BODY_BYTES", str(12 * 1024 * 1024)))
 
 if not BOT_TOKEN:
     raise RuntimeError("Missing TELEGRAM_BOT_TOKEN")
+if not ACCESS_CODE:
+    raise RuntimeError("Missing ACCESS_CODE: configure a private access code in Railway variables.")
 if not WEBAPP_URL.startswith(("https://", "http://")):
     raise RuntimeError("WEBAPP_URL must include https://")
 
@@ -149,6 +153,32 @@ def rate_limit(bucket, limit=30, window=60):
         _rate[key] = arr
         return True
 
+
+def issue_access_token():
+    issued = str(int(time.time()))
+    sig = hmac.new(ACCESS_TOKEN_SECRET.encode(), ("nexus-access:" + issued).encode(), hashlib.sha256).hexdigest()
+    return issued + "." + sig
+
+def valid_access_token(token):
+    try:
+        issued, sig = token.split(".", 1)
+        issued_int = int(issued)
+        age = time.time() - issued_int
+        if age < -60 or age > 4 * 60 * 60:
+            return False
+        expected = hmac.new(ACCESS_TOKEN_SECRET.encode(), ("nexus-access:" + issued).encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, sig)
+    except Exception:
+        return False
+
+def has_access():
+    return valid_access_token(request.headers.get("X-Nexus-Access-Token", ""))
+
+def access_required_response():
+    if not has_access():
+        return jsonify({"error": "Se requiere un código de acceso válido para continuar."}), 401
+    return None
+
 def add_event(reg_id, event_type, message, severity="info", metadata=None):
     with _db_lock:
         conn = db()
@@ -230,15 +260,69 @@ def validate_payload(data):
         "face_check": face_check
     }, None
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def send_webapp_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    token = issue_access_token()
+    base = WEBAPP_URL.split("#", 1)[0]
+    separator = "&" if "?" in base else "?"
+    # Fragment is not sent to the web server; the Mini App consumes it once.
+    launch_url = base + separator + "launch=telegram&nexus_access=" + token
     keyboard = [[InlineKeyboardButton(
-        "🚀 Open NEXUS AI",
-        web_app=WebAppInfo(url=WEBAPP_URL)
+        "🚀 Abrir NEXUS AI",
+        web_app=WebAppInfo(url=launch_url)
     )]]
-    await update.message.reply_text(
-        "NEXUS AI\n\nPreparación inteligente de tu registro.",
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Acceso autorizado.\n\nPulsa el botón para abrir la plataforma.",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["access_attempts"] = 0
+    context.user_data["access_granted"] = False
+    await update.effective_message.reply_text(
+        "🔐 NEXUS AI · ACCESO RESTRINGIDO\n\nIntroduce tu código de acceso para continuar. Sin un código válido no se habilitará la plataforma."
+    )
+
+async def verify_code_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = update.effective_message
+    supplied = (message.text or "").strip()
+    attempts = int(context.user_data.get("access_attempts", 0))
+    if attempts >= 5:
+        await message.reply_text("Demasiados intentos. Envía /start más tarde para volver a intentarlo.")
+        return
+    if not hmac.compare_digest(supplied, ACCESS_CODE):
+        context.user_data["access_attempts"] = attempts + 1
+        await message.reply_text("Código incorrecto. Inténtalo de nuevo.")
+        try:
+            await message.delete()
+        except Exception:
+            pass
+        return
+    context.user_data["access_granted"] = True
+    context.user_data["access_attempts"] = 0
+    try:
+        await message.delete()
+    except Exception:
+        pass
+    await send_webapp_button(update, context)
+
+
+
+@app.post("/api/access")
+def access_login():
+    if not rate_limit("access-code", limit=8, window=300):
+        return jsonify({"error": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo."}), 429
+    body = request.get_json(silent=True) or {}
+    supplied = body.get("code", "")
+    if not isinstance(supplied, str) or not hmac.compare_digest(supplied.strip(), ACCESS_CODE):
+        return jsonify({"error": "Código incorrecto. Inténtalo de nuevo."}), 401
+    return jsonify({"ok": True, "token": issue_access_token(), "expires_in": 14400})
+
+@app.get("/api/access/verify")
+def access_verify():
+    if not has_access():
+        return jsonify({"ok": False, "error": "El acceso expiró. Introduce el código nuevamente."}), 401
+    return jsonify({"ok": True, "expires_in": 14400})
 
 @app.get("/")
 def index():
@@ -276,6 +360,9 @@ def system():
 
 @app.post("/api/face-check")
 def face_check():
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
     """Non-identifying face presence/framing check; image is processed in memory only."""
     if not rate_limit("face-check", limit=12, window=60):
         return jsonify({"error": "Too many face checks. Please wait a moment."}), 429
@@ -321,6 +408,9 @@ def face_check():
 
 @app.post("/api/register")
 def register():
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
     if not rate_limit("register", 20, 60):
         return jsonify({"error": "Too many requests. Try again shortly."}), 429
 
@@ -381,6 +471,9 @@ def register():
 
 @app.post("/api/validate")
 def validate_api():
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
     if not rate_limit("validate", 30, 60):
         return jsonify({"error":"Too many requests"}), 429
     valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data",""))
@@ -393,6 +486,9 @@ def validate_api():
 
 @app.get("/api/registrations/<int:reg_id>")
 def get_registration(reg_id):
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
     valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
     if not valid:
         return jsonify({"error": "Invalid Telegram authentication"}), 401
@@ -411,6 +507,9 @@ def get_registration(reg_id):
 
 @app.post("/api/registrations/<int:reg_id>/event")
 def event(reg_id):
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
     if not rate_limit("event", 60, 60):
         return jsonify({"error": "Too many requests"}), 429
     valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
@@ -453,6 +552,7 @@ def run_web():
 def run_bot():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, verify_code_message))
     application.run_polling(close_loop=False)
 
 if __name__ == "__main__":

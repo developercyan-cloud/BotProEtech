@@ -63,3 +63,24 @@ The document-creation animation is now triggered by the confirmed `/api/register
 
 ### SSN
 NEXUS 8.3 includes an SSN field with masked input, formatting and local 9-digit validation. It does not claim to verify an SSN against SSA records. SSA's official SSNVS is restricted to authorized employers/third-party submitters for permitted wage-reporting purposes, while CBSV is a consent-based service for enrolled organizations. An actual online SSA verification requires the appropriate authorized service/integration and credentials.
+
+
+### NEXUS 8.4
+Ajuste visual del campo SSN: alineación, ancho, espaciado, botón Mostrar/Ocultar y mensaje de ayuda integrados al formulario.
+
+
+## Acceso restringido — NEXUS 8.6
+
+Configura estas variables en Railway:
+
+- `ACCESS_CODE`: código privado que el usuario debe introducir en el bot de Telegram. Usa una clave larga y aleatoria; no la pongas en el HTML ni en GitHub.
+- `ACCESS_TOKEN_SECRET`: opcional; una clave aleatoria larga para firmar tokens de acceso. Si se omite, se deriva de `TELEGRAM_BOT_TOKEN` y `ACCESS_CODE`.
+
+Comportamiento:
+1. `/start` solicita el código de acceso por Telegram. Sin un código correcto, el bot no envía el botón de apertura.
+2. El Mini App recibe un token temporal de 4 horas al abrirse desde el bot.
+3. Si alguien abre la URL pública directamente, se muestra una pantalla de acceso antes de revelar la interfaz.
+4. Los endpoints de análisis facial, validación y registro exigen el token firmado.
+5. Los intentos de código están limitados por IP en la web y a cinco intentos por conversación del bot.
+
+Después de añadir `ACCESS_CODE` en Railway, haz un nuevo deploy. Si la variable falta, el servicio se detiene de forma segura y lo indica en los logs.

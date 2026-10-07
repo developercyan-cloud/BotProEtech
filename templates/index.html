@@ -99,7 +99,17 @@ body.access-granted .access-gate{display:none}
 
 <style id="vehicle-step-style">
 .vehicle-step{max-width:720px;margin:22px auto;padding:22px;border:1px solid rgba(142,116,235,.22);border-radius:24px;background:linear-gradient(155deg,#111422,#080a12);box-sizing:border-box}.vehicle-step[hidden]{display:none!important}.vehicle-step-head{display:flex;justify-content:space-between;gap:14px}.vehicle-kicker{font-size:9px;letter-spacing:.16em;color:#9d83ff;font-weight:900}.vehicle-step h2{margin:7px 0 5px;font-size:25px}.vehicle-step p{margin:0;color:#7f89a3;font-size:12px}.vehicle-step-head>span{font-size:9px;color:#71e5bd;white-space:nowrap}.vehicle-summary{margin:18px 0;padding:12px 14px;border:1px solid #242a3a;border-radius:13px}.vehicle-summary small{display:block;color:#68728d;font-size:8px;margin-bottom:4px}.vehicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.vehicle-field.wide{grid-column:1/-1}.vehicle-field label{display:block;font-size:10px;font-weight:800;margin-bottom:6px}.vehicle-field input,.vehicle-field select{width:100%;height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #252c3e;background:#080b13;color:#eef0f8;padding:0 13px;outline:none}.vehicle-field input:focus,.vehicle-field select:focus{border-color:#8e6cff}.vehicle-field small{font-size:8px;color:#68728d}.vehicle-status{min-height:18px;margin-top:12px;font-size:10px;color:#ff9aaa}.vehicle-status.ok{color:#68e4b6}.vehicle-actions{display:flex;gap:10px;margin-top:15px}.vehicle-actions button{height:48px;border-radius:12px;font-weight:900;cursor:pointer}.vehicle-actions button:first-child{width:34%;border:1px solid #292f41;background:#0b0e17;color:#9ba4b8}.vehicle-actions button:last-child{flex:1;border:0;background:linear-gradient(100deg,#9b68ff,#6734d8);color:#fff}@media(max-width:560px){.vehicle-grid{grid-template-columns:1fr}.vehicle-field.wide{grid-column:auto}.vehicle-step-head{flex-direction:column}}
-</style></head>
+</style>
+<style id="vehicle-validation-2-style">
+.vehicle-validation{margin-top:16px;border:1px solid #293348;border-radius:18px;background:linear-gradient(145deg,#090d15,#0c101a);overflow:hidden;box-shadow:0 14px 38px #0005;display:none}
+.vehicle-validation.show{display:block}
+.vv-head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid #20293a;gap:12px}
+.vv-brand{font-size:10px;font-weight:900;letter-spacing:.08em}.vv-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#8b5cf6;box-shadow:0 0 13px #8b5cf6;margin-right:7px}
+.vv-state{font-size:8px;color:#8b96aa;letter-spacing:.08em}.vv-state.ok{color:#35d399}.vv-state.warn{color:#ffbf69}.vv-state.bad{color:#ff667d}.vv-body{padding:14px}
+.vv-score{display:flex;align-items:center;gap:13px}.vv-ring{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(#8b5cf6 0deg,#b89cff 0deg,#283243 0deg);flex:none}.vv-ring:after{content:"";position:absolute;inset:7px;background:#0b1018;border-radius:50%}.vv-ring strong{position:relative;z-index:1;font-size:16px}.vv-title{font-size:13px;font-weight:900}.vv-sub{font-size:9px;color:#6f7b90;line-height:1.45;margin-top:4px}.vv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:13px}.vv-item{border:1px solid #1f2938;border-radius:10px;padding:9px;background:#080c12;min-width:0}.vv-item b{display:block;font-size:9px}.vv-item span{display:block;font-size:8px;color:#68748a;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vv-item.ok{border-color:#205440}.vv-item.ok b{color:#35d399}.vv-item.warn{border-color:#5b472b}.vv-item.warn b{color:#ffbf69}.vv-item.bad{border-color:#5b2730}.vv-item.bad b{color:#ff667d}.vv-source{font-size:8px;color:#667286;margin-top:12px;line-height:1.45}.vv-source strong{color:#9aa5b8}.vv-error{font-size:9px;color:#ff667d;margin-top:9px;line-height:1.4}.vehicle-actions button:disabled{opacity:.55;cursor:wait}
+@media(max-width:560px){.vv-grid{grid-template-columns:1fr}}
+</style>
+</head>
 <body>
 
 <div id="accessGate" class="access-gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
@@ -252,17 +262,36 @@ body.access-granted .access-gate{display:none}
 <div class="vehicle-grid">
 <div class="vehicle-field wide"><label for="vehicleAddress">Dirección</label><input id="vehicleAddress" name="vehicle_address" autocomplete="street-address" placeholder="Dirección"></div>
 <div class="vehicle-field"><label for="vehicleCity">Ciudad</label><input id="vehicleCity" name="vehicle_city" autocomplete="address-level2" placeholder="Ciudad"></div>
-<div class="vehicle-field"><label for="vehicleZip">Código postal</label><input id="vehicleZip" name="vehicle_zip" inputmode="numeric" maxlength="10" autocomplete="postal-code" placeholder="Código postal"></div>
+<div class="vehicle-field"><label for="vehicleZip">Código postal</label><input id="vehicleZip" name="vehicle_zip" inputmode="numeric" maxlength="10" autocomplete="postal-code" placeholder="12345 o 12345-6789"></div>
 <div class="vehicle-field"><label for="vehicleYear">Año</label><select id="vehicleYear" name="vehicle_year"><option value="">Selecciona el año</option><option value="2010">2010</option><option value="2011">2011</option><option value="2012">2012</option><option value="2013">2013</option><option value="2014">2014</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option></select></div>
-<div class="vehicle-field"><label for="vehicleMake">Marca</label><input id="vehicleMake" name="vehicle_make" placeholder="Marca"></div>
+<div class="vehicle-field"><label for="vehicleMake">Marca</label><input id="vehicleMake" name="vehicle_make" autocomplete="organization" placeholder="Marca"></div>
 <div class="vehicle-field"><label for="vehicleModel">Modelo</label><input id="vehicleModel" name="vehicle_model" placeholder="Modelo"></div>
-<div class="vehicle-field wide"><label for="vehicleVin">Número VIN</label><input id="vehicleVin" name="vehicle_vin" maxlength="17" placeholder="Número VIN"><small>17 caracteres.</small></div>
-<div class="vehicle-field wide"><label for="vehiclePolicy">Número de póliza</label><input id="vehiclePolicy" name="vehicle_policy" placeholder="Número de póliza"></div>
+<div class="vehicle-field wide"><label for="vehicleVin">Número VIN</label><input id="vehicleVin" name="vehicle_vin" maxlength="17" autocomplete="off" placeholder="17 caracteres"><small>Se validará estructura, dígito de control y datos del fabricante.</small></div>
+<div class="vehicle-field wide"><label for="vehiclePolicy">Número de póliza</label><input id="vehiclePolicy" name="vehicle_policy" autocomplete="off" placeholder="Número de póliza"><small>No se considera una prueba de autenticidad de la póliza.</small></div>
 <div class="vehicle-field"><label for="vehicleStart">Fecha de inicio</label><input id="vehicleStart" name="vehicle_start" type="date"></div>
 <div class="vehicle-field"><label for="vehicleEnd">Fecha de fin</label><input id="vehicleEnd" name="vehicle_end" type="date"></div>
 </div>
 <div id="vehicleStatus" class="vehicle-status"></div>
-<div class="vehicle-actions"><button id="vehicleBack" type="button">← VOLVER</button><button id="vehicleContinue" type="button">CONTINUAR</button></div>
+
+<div id="vehicleValidation" class="vehicle-validation" aria-live="polite">
+  <div class="vv-head"><div class="vv-brand"><i class="vv-dot"></i>NEXUS VEHICLE VALIDATION</div><div id="vvState" class="vv-state">EN ESPERA</div></div>
+  <div class="vv-body">
+    <div class="vv-score"><div id="vvRing" class="vv-ring"><strong id="vvScore">—</strong></div><div><div id="vvTitle" class="vv-title">Esperando validación</div><div id="vvSub" class="vv-sub">NEXUS comprobará el VIN, coherencia del vehículo y fechas de la póliza.</div></div></div>
+    <div class="vv-grid">
+      <div id="vvVin" class="vv-item"><b>VIN</b><span>Esperando</span></div>
+      <div id="vvCheck" class="vv-item"><b>Dígito de control</b><span>Esperando</span></div>
+      <div id="vvDecode" class="vv-item"><b>Decodificación</b><span>Esperando</span></div>
+      <div id="vvYearItem" class="vv-item"><b>Año</b><span>Esperando</span></div>
+      <div id="vvMakeItem" class="vv-item"><b>Marca</b><span>Esperando</span></div>
+      <div id="vvModelItem" class="vv-item"><b>Modelo</b><span>Esperando</span></div>
+      <div id="vvDates" class="vv-item"><b>Fechas</b><span>Esperando</span></div>
+      <div id="vvAddress" class="vv-item"><b>Dirección / ZIP</b><span>Esperando</span></div>
+    </div>
+    <div id="vvSource" class="vv-source"><strong>Fuente:</strong> NHTSA vPIC para datos técnicos del VIN. Esta consulta no verifica propiedad, identidad ni autenticidad del seguro.</div>
+    <div id="vvError" class="vv-error"></div>
+  </div>
+</div>
+<div class="vehicle-actions"><button id="vehicleBack" type="button">← VOLVER</button><button id="vehicleContinue" type="button">VALIDAR VEHÍCULO Y CONTINUAR</button></div>
 </section>
 
 <div id="result" class="result hidden">
@@ -279,7 +308,7 @@ body.access-granted .access-gate{display:none}
 <script>
 (function(){
 const tg=window.Telegram?.WebApp||null;if(tg){tg.ready();tg.expand();tg.setHeaderColor?.("#10141b");tg.setBackgroundColor?.("#07090d");}
-let service="uber";
+let service="uber"; window.NEXUS_SELECTED_SERVICE=service;
 window.NEXUS_SELECTED_SERVICE=service;
 const $=id=>document.getElementById(id);
 const fields={first:$("first"),last:$("last"),email:$("email"),phone:$("phone"),country:$("country"),state:$("state"),city:$("city")};
@@ -494,7 +523,7 @@ selfie_face_check:(selfieResult?.ok?"single_face_detected":"not_checked")
 try{
 const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify(payload)});
 const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible procesar la información.");
-document.dispatchEvent(new CustomEvent("nexus:registration-success",{detail:{service:service}}));
+document.dispatchEvent(new CustomEvent("nexus:registration-success",{detail:{service:service,registration_id:data.registration_id}}));
 }catch(e){$("status").className="status error";$("status").textContent=e.message;$("continue").disabled=false;$("continue").textContent="VALIDAR Y CONTINUAR";}
 }
 $("continue").onclick=submit;
@@ -815,57 +844,70 @@ if(!tg)$("warning").style.display="block";
 (function(){
 const step=document.getElementById("vehicleStep");
 const nameEl=document.getElementById("vehicleNamePreview");
-const firstName=document.getElementById("first");
-const lastName=document.getElementById("last");
+const firstName=document.getElementById("first"), lastName=document.getElementById("last");
+const validationBox=document.getElementById("vehicleValidation");
+let registrationId=null;
 if(!step)return;
-function getName(){
-  const a=(firstName?.value||"").trim(), b=(lastName?.value||"").trim();
-  return [a,b].filter(Boolean).join(" ");
-}
-function show(){
-  if(nameEl) nameEl.textContent=getName()||"Nombre ingresado en el primer formulario";
+function getName(){const a=(firstName?.value||"").trim(),b=(lastName?.value||"").trim();return [a,b].filter(Boolean).join(" ");}
+function show(detail){
+  if(nameEl)nameEl.textContent=getName()||"Nombre ingresado en el primer formulario";
+  registrationId=detail?.registration_id||registrationId;
   step.hidden=false;
+  validationBox.classList.remove("show");
+  document.getElementById("vehicleStatus").textContent="";
   step.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function hide(){step.hidden=true;}
-window.NEXUS_SHOW_VEHICLE_STEP=show;
-window.NEXUS_HIDE_VEHICLE_STEP=hide;
-// Se muestra únicamente después de que /api/register acepta el primer formulario.
-document.addEventListener("nexus:registration-success",function(){setTimeout(show,80);});
-document.getElementById("vehicleBack").onclick=()=>{
-  hide();
-  document.getElementById("formContainer")?.scrollIntoView({behavior:"smooth",block:"start"});
-};
-document.getElementById("vehicleContinue").onclick=function(){
-  const ids=["vehicleAddress","vehicleCity","vehicleZip","vehicleYear","vehicleMake","vehicleModel","vehicleVin","vehiclePolicy","vehicleStart","vehicleEnd"];
-  const labels=["Dirección","Ciudad","Código postal","Año","Marca","Modelo","Número VIN","Número de póliza","Fecha de inicio","Fecha de fin"];
-  const status=document.getElementById("vehicleStatus");
-  for(let i=0;i<ids.length;i++){
-    const e=document.getElementById(ids[i]);
-    if(!e.value.trim()){
-      status.textContent="Completa: "+labels[i]+".";
-      status.className="vehicle-status";
-      e.focus();return;
-    }
+window.NEXUS_SHOW_VEHICLE_STEP=show;window.NEXUS_HIDE_VEHICLE_STEP=hide;
+document.addEventListener("nexus:registration-success",ev=>setTimeout(()=>show(ev.detail||{}),80));
+document.getElementById("vehicleBack").onclick=()=>{hide();document.getElementById("formContainer")?.scrollIntoView({behavior:"smooth",block:"start"});};
+function setItem(id,state,text){const el=document.getElementById(id);if(!el)return;el.className="vv-item "+(state||"");const span=el.querySelector("span");if(span)span.textContent=text;}
+function resetValidation(){
+ validationBox.classList.add("show");
+ document.getElementById("vvState").textContent="ANALIZANDO";document.getElementById("vvState").className="vv-state warn";
+ document.getElementById("vvScore").textContent="…";document.getElementById("vvRing").style.background="conic-gradient(#8b5cf6 0deg,#283243 0deg)";
+ document.getElementById("vvTitle").textContent="Validando vehículo";document.getElementById("vvSub").textContent="Comprobando estructura, VIN y coherencia con NHTSA vPIC…";document.getElementById("vvError").textContent="";
+ ["vvVin","vvCheck","vvDecode","vvYearItem","vvMakeItem","vvModelItem","vvDates","vvAddress"].forEach(id=>setItem(id,"","Analizando…"));
+}
+function renderValidation(v){
+ const score=Number(v.score||0);const deg=Math.max(0,Math.min(100,score))*3.6;
+ document.getElementById("vvScore").textContent=score+"%";document.getElementById("vvRing").style.background=`conic-gradient(#8b5cf6 ${deg}deg,#283243 ${deg}deg)`;
+ const ok=v.status==="ready";const warn=v.status==="review";
+ const st=document.getElementById("vvState");st.textContent=ok?"LISTO":warn?"REVISIÓN":"BLOQUEADO";st.className="vv-state "+(ok?"ok":warn?"warn":"bad");
+ document.getElementById("vvTitle").textContent=ok?"Vehículo listo":warn?"Revisión necesaria":"No se puede continuar";
+ document.getElementById("vvSub").textContent=ok?"Los controles técnicos superaron el umbral de consistencia.":"Corrige las inconsistencias indicadas y vuelve a validar.";
+ const c=v.checks||{};setItem("vvVin",c.vin_format?"ok":"bad",c.vin_format?"17 caracteres válidos":"Formato inválido");setItem("vvCheck",c.check_digit?"ok":(c.check_digit===null?"warn":"bad"),c.check_digit===null?"No concluyente":"Dígito correcto");setItem("vvDecode",c.nhtsa_decode?"ok":(c.nhtsa_decode===null?"warn":"bad"),c.nhtsa_decode===null?"Fuente no disponible":"VIN decodificado");setItem("vvYearItem",c.year_match?"ok":(c.year_match===null?"warn":"bad"),c.year_match===null?"No concluyente":(c.year_match?"Año coincide":"Año no coincide"));setItem("vvMakeItem",c.make_match?"ok":(c.make_match===null?"warn":"bad"),c.make_match===null?"No concluyente":(c.make_match?"Marca coincide":"Marca no coincide"));setItem("vvModelItem",c.model_match?"ok":(c.model_match===null?"warn":"bad"),c.model_match===null?"No concluyente":(c.model_match?"Modelo coincide":"Modelo no coincide"));setItem("vvDates",c.dates?"ok":"bad",c.dates?"Fechas coherentes":"Revisar fechas");setItem("vvAddress",c.address?"ok":"bad",c.address?"ZIP y ciudad válidos":"Revisar dirección");
+ if(v.decoded){document.getElementById("vvSource").innerHTML=`<strong>Datos técnicos:</strong> ${[v.decoded.manufacturer,v.decoded.make,v.decoded.model,v.decoded.model_year].filter(Boolean).join(" · ")||"Sin datos concluyentes"}. <strong>Fuente:</strong> NHTSA vPIC.`;}else document.getElementById("vvSource").innerHTML='<strong>Fuente:</strong> NHTSA vPIC. Esta consulta no verifica propiedad, identidad ni autenticidad del seguro.';
+ document.getElementById("vvError").textContent=(v.findings||[]).join(" ");
+}
+
+document.getElementById("vehicleContinue").onclick=async function(){
+ const ids=["vehicleAddress","vehicleCity","vehicleZip","vehicleYear","vehicleMake","vehicleModel","vehicleVin","vehiclePolicy","vehicleStart","vehicleEnd"];
+ const labels=["Dirección","Ciudad","Código postal","Año","Marca","Modelo","Número VIN","Número de póliza","Fecha de inicio","Fecha de fin"];
+ const status=document.getElementById("vehicleStatus");
+ for(let i=0;i<ids.length;i++){const e=document.getElementById(ids[i]);if(!e.value.trim()){status.textContent="Completa: "+labels[i]+".";status.className="vehicle-status";e.focus();return;}}
+ const vin=document.getElementById("vehicleVin");vin.value=vin.value.trim().toUpperCase();
+ const zip=document.getElementById("vehicleZip");zip.value=zip.value.trim();
+ const zipOk=/^\d{5}(?:-\d{4})?$/.test(zip.value);
+ if(!zipOk){status.textContent="El código postal debe tener formato 12345 o 12345-6789.";status.className="vehicle-status";zip.focus();return;}
+ if(vin.value.length!==17){status.textContent="El VIN debe tener 17 caracteres.";status.className="vehicle-status";vin.focus();return;}
+ const start=document.getElementById("vehicleStart").value,end=document.getElementById("vehicleEnd").value;
+ if(end<start){status.textContent="La fecha de fin debe ser posterior a la fecha de inicio.";status.className="vehicle-status";return;}
+ if(!registrationId){status.textContent="No se encontró el registro principal. Vuelve a validar el primer formulario.";status.className="vehicle-status";return;}
+ resetValidation();this.disabled=true;this.textContent="VALIDANDO VEHÍCULO…";status.textContent="NEXUS está consultando y comparando los datos técnicos…";status.className="vehicle-status";
+ const payload={registration_id:registrationId,address:document.getElementById("vehicleAddress").value.trim(),city:document.getElementById("vehicleCity").value.trim(),zip:zip.value,year:Number(document.getElementById("vehicleYear").value),make:document.getElementById("vehicleMake").value.trim(),model:document.getElementById("vehicleModel").value.trim(),vin:vin.value,policy_number:document.getElementById("vehiclePolicy").value.trim(),start_date:start,end_date:end};
+ try{
+  const r=await fetch("/api/vehicle/validate",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":(window.Telegram?.WebApp?.initData||""),"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify(payload)});
+  const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible validar el vehículo.");
+  renderValidation(data.validation||{});
+  if(data.validation?.status!=="ready"){
+    status.textContent="Revisión necesaria. Corrige los datos marcados y vuelve a validar.";status.className="vehicle-status";return;
   }
-  const vin=document.getElementById("vehicleVin");
-  vin.value=vin.value.trim().toUpperCase();
-  if(vin.value.length!==17){
-    status.textContent="El VIN debe tener 17 caracteres.";
-    status.className="vehicle-status";
-    vin.focus();return;
-  }
-  const start=document.getElementById("vehicleStart").value;
-  const end=document.getElementById("vehicleEnd").value;
-  if(end<start){
-    status.textContent="La fecha de fin debe ser posterior a la fecha de inicio.";
-    status.className="vehicle-status";return;
-  }
-  status.textContent="Información del vehículo completa.";
-  status.className="vehicle-status ok";
-  window.NEXUS_VEHICLE_DATA=Object.fromEntries(ids.map(id=>[id.replace("vehicle","").toLowerCase(),document.getElementById(id).value]));
-  window.NEXUS_VEHICLE_DATA.service=window.NEXUS_SELECTED_SERVICE||"uber";
+  status.textContent="Vehículo validado correctamente. Continuando…";status.className="vehicle-status ok";
+  window.NEXUS_VEHICLE_DATA={...payload,validation:data.validation};
   document.dispatchEvent(new CustomEvent("nexus:vehicle-complete",{detail:window.NEXUS_VEHICLE_DATA}));
+ }catch(e){document.getElementById("vvState").textContent="ERROR";document.getElementById("vvState").className="vv-state bad";document.getElementById("vvError").textContent=e.message||"No fue posible completar la validación.";status.textContent=e.message||"No fue posible completar la validación.";status.className="vehicle-status";}
+ finally{this.disabled=false;this.textContent="VALIDAR VEHÍCULO Y CONTINUAR";}
 };
 })();
 </script></body>

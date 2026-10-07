@@ -784,6 +784,68 @@ def vehicle_validate():
     return jsonify({"ok":True,"validation":validation}),200
 
 
+def issue_document_token(registration_id):
+    issued = str(int(time.time()))
+    payload = f"nexus-doc:{registration_id}:{issued}"
+    sig = hmac.new(ACCESS_TOKEN_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{registration_id}.{issued}.{sig}"
+
+def valid_document_token(token):
+    try:
+        reg_id, issued, sig = token.split(".", 2)
+        issued_int = int(issued)
+        age = time.time() - issued_int
+        if age < -60 or age > 10 * 60:
+            return None
+        payload = f"nexus-doc:{int(reg_id)}:{issued}"
+        expected = hmac.new(ACCESS_TOKEN_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected, sig):
+            return None
+        return int(reg_id)
+    except Exception:
+        return None
+
+@app.post("/api/vehicle/document-link")
+def vehicle_document_link():
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
+    valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
+    if not valid:
+        return jsonify({"error": "Invalid Telegram authentication"}), 401
+    telegram_id, _ = telegram_user(parsed)
+    body = request.get_json(silent=True) or {}
+    try:
+        registration_id = int(body.get("registration_id"))
+    except Exception:
+        return jsonify({"error": "Registro inválido."}), 400
+    conn = db()
+    row = conn.execute("""SELECT r.id FROM registrations r JOIN vehicle_details v ON v.registration_id=r.id
+                         WHERE r.id=? AND r.telegram_user_id=? AND v.validation_status='ready'""", (registration_id, telegram_id)).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"error": "No existe un vehículo validado para este registro."}), 404
+    token = issue_document_token(registration_id)
+    return jsonify({"ok": True, "url": f"/api/vehicle/document/view?token={token}"})
+
+@app.get("/api/vehicle/document/view")
+def vehicle_document_view():
+    registration_id = valid_document_token(request.args.get("token", ""))
+    if not registration_id:
+        return jsonify({"error": "El enlace del documento ha expirado o no es válido."}), 401
+    conn = db()
+    row = conn.execute("""SELECT r.id,r.service,r.first_name,r.last_name,r.email,r.phone,r.state,r.city,r.passport_ref,r.created_at,
+                                v.address,v.city AS vehicle_city,v.zip_code,v.model_year,v.make,v.model,v.vin,v.policy_last4,v.start_date,v.end_date,v.validation_score,v.validation_status,v.decoded_json
+                         FROM registrations r JOIN vehicle_details v ON v.registration_id=r.id
+                         WHERE r.id=? AND v.validation_status='ready'""", (registration_id,)).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"error": "No existe un vehículo validado para este registro."}), 404
+    data=dict(row)
+    try: decoded=json.loads(data.get("decoded_json") or "{}")
+    except Exception: decoded={}
+    return build_vehicle_pdf_response(data, decoded, registration_id)
+
 @app.post("/api/vehicle/document")
 def vehicle_document():
     """Generate a non-official vehicle registration summary PDF from the validated record."""
@@ -817,78 +879,82 @@ def vehicle_document():
     except Exception:
         decoded = {}
 
-    buf = BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=letter, rightMargin=42, leftMargin=42, topMargin=42, bottomMargin=42, title="NEXUS AI - Registro de vehículo", author="NEXUS AI")
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="NXTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=20, leading=24, textColor=colors.HexColor("#4c2ca8"), alignment=TA_CENTER, spaceAfter=6))
-    styles.add(ParagraphStyle(name="NXSub", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#667085"), alignment=TA_CENTER, spaceAfter=18))
-    styles.add(ParagraphStyle(name="NXSection", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=colors.HexColor("#302060"), spaceBefore=10, spaceAfter=7))
-    styles.add(ParagraphStyle(name="NXSmall", parent=styles["Normal"], fontSize=8, leading=11, textColor=colors.HexColor("#667085")))
+    return build_vehicle_pdf_response(data, decoded, registration_id)
 
-    story=[]
-    story.append(Paragraph("NEXUS AI", styles["NXTitle"]))
-    story.append(Paragraph("REGISTRO DE VEHÍCULO", styles["Heading1"]))
-    story.append(Paragraph("Documento informativo generado a partir de los datos proporcionados y de la validación técnica realizada. No es un documento oficial de una aseguradora, DMV ni de la plataforma seleccionada.", styles["NXSub"]))
+def build_vehicle_pdf_response(data, decoded, registration_id):
+        buf = BytesIO()
+        doc = SimpleDocTemplate(buf, pagesize=letter, rightMargin=42, leftMargin=42, topMargin=42, bottomMargin=42, title="NEXUS AI - Registro de vehículo", author="NEXUS AI")
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name="NXTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=20, leading=24, textColor=colors.HexColor("#4c2ca8"), alignment=TA_CENTER, spaceAfter=6))
+        styles.add(ParagraphStyle(name="NXSub", parent=styles["Normal"], fontSize=9, leading=13, textColor=colors.HexColor("#667085"), alignment=TA_CENTER, spaceAfter=18))
+        styles.add(ParagraphStyle(name="NXSection", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=colors.HexColor("#302060"), spaceBefore=10, spaceAfter=7))
+        styles.add(ParagraphStyle(name="NXSmall", parent=styles["Normal"], fontSize=8, leading=11, textColor=colors.HexColor("#667085")))
 
-    def table(rows):
-        t=Table(rows, colWidths=[1.75*inch, 4.6*inch], hAlign="LEFT")
-        t.setStyle(TableStyle([
-            ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#f1eff9")),
-            ("TEXTCOLOR",(0,0),(0,-1),colors.HexColor("#40346b")),
-            ("TEXTCOLOR",(1,0),(1,-1),colors.HexColor("#20232b")),
-            ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold"),
-            ("FONTNAME",(1,0),(1,-1),"Helvetica"),
-            ("FONTSIZE",(0,0),(-1,-1),9),
-            ("GRID",(0,0),(-1,-1),0.35,colors.HexColor("#d9d5e7")),
-            ("VALIGN",(0,0),(-1,-1),"TOP"),
-            ("LEFTPADDING",(0,0),(-1,-1),8), ("RIGHTPADDING",(0,0),(-1,-1),8),
-            ("TOPPADDING",(0,0),(-1,-1),7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
+        story=[]
+        story.append(Paragraph("NEXUS AI", styles["NXTitle"]))
+        story.append(Paragraph("REGISTRO DE VEHÍCULO", styles["Heading1"]))
+        story.append(Paragraph("Documento informativo generado a partir de los datos proporcionados y de la validación técnica realizada. No es un documento oficial de una aseguradora, DMV ni de la plataforma seleccionada.", styles["NXSub"]))
+
+        def table(rows):
+            t=Table(rows, colWidths=[1.75*inch, 4.6*inch], hAlign="LEFT")
+            t.setStyle(TableStyle([
+                ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#f1eff9")),
+                ("TEXTCOLOR",(0,0),(0,-1),colors.HexColor("#40346b")),
+                ("TEXTCOLOR",(1,0),(1,-1),colors.HexColor("#20232b")),
+                ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold"),
+                ("FONTNAME",(1,0),(1,-1),"Helvetica"),
+                ("FONTSIZE",(0,0),(-1,-1),9),
+                ("GRID",(0,0),(-1,-1),0.35,colors.HexColor("#d9d5e7")),
+                ("VALIGN",(0,0),(-1,-1),"TOP"),
+                ("LEFTPADDING",(0,0),(-1,-1),8), ("RIGHTPADDING",(0,0),(-1,-1),8),
+                ("TOPPADDING",(0,0),(-1,-1),7), ("BOTTOMPADDING",(0,0),(-1,-1),7),
+            ]))
+            return t
+
+        story.append(Paragraph("Datos del registro", styles["NXSection"]))
+        story.append(table([
+            ["Referencia", data["passport_ref"]], ["Plataforma", data["service"].title()],
+            ["Nombre", f'{data["first_name"]} {data["last_name"]}'], ["Correo", data["email"]],
+            ["Teléfono", data["phone"]], ["Estado", data["state"]], ["Ciudad", data["city"]]
         ]))
-        return t
 
-    story.append(Paragraph("Datos del registro", styles["NXSection"]))
-    story.append(table([
-        ["Referencia", data["passport_ref"]], ["Plataforma", data["service"].title()],
-        ["Nombre", f'{data["first_name"]} {data["last_name"]}'], ["Correo", data["email"]],
-        ["Teléfono", data["phone"]], ["Estado", data["state"]], ["Ciudad", data["city"]]
-    ]))
+        story.append(Paragraph("Datos del vehículo", styles["NXSection"]))
+        story.append(table([
+            ["Dirección", data["address"]], ["Ciudad", data["vehicle_city"]], ["Código postal", data["zip_code"]],
+            ["Año", str(data["model_year"])], ["Marca", data["make"]], ["Modelo", data["model"]],
+            ["VIN", data["vin"]], ["Número de póliza", "••••" + str(data["policy_last4"])],
+            ["Fecha de inicio", data["start_date"]], ["Fecha de fin", data["end_date"]]
+        ]))
 
-    story.append(Paragraph("Datos del vehículo", styles["NXSection"]))
-    story.append(table([
-        ["Dirección", data["address"]], ["Ciudad", data["vehicle_city"]], ["Código postal", data["zip_code"]],
-        ["Año", str(data["model_year"])], ["Marca", data["make"]], ["Modelo", data["model"]],
-        ["VIN", data["vin"]], ["Número de póliza", "••••" + str(data["policy_last4"])],
-        ["Fecha de inicio", data["start_date"]], ["Fecha de fin", data["end_date"]]
-    ]))
+        story.append(Paragraph("Validación técnica", styles["NXSection"]))
+        source_line = " · ".join([pdf_text(x) for x in [decoded.get("manufacturer"), decoded.get("make"), decoded.get("model"), decoded.get("model_year")] if x])
+        story.append(table([
+            ["Resultado", "VALIDACIÓN TÉCNICA SUPERADA"], ["Puntuación NEXUS", f'{data["validation_score"]}/100'],
+            ["VIN", "Válido y decodificado"], ["Datos técnicos", source_line or "Sin datos adicionales"],
+            ["Fuente técnica", "NHTSA vPIC"]
+        ]))
 
-    story.append(Paragraph("Validación técnica", styles["NXSection"]))
-    source_line = " · ".join([pdf_text(x) for x in [decoded.get("manufacturer"), decoded.get("make"), decoded.get("model"), decoded.get("model_year")] if x])
-    story.append(table([
-        ["Resultado", "VALIDACIÓN TÉCNICA SUPERADA"], ["Puntuación NEXUS", f'{data["validation_score"]}/100'],
-        ["VIN", "Válido y decodificado"], ["Datos técnicos", source_line or "Sin datos adicionales"],
-        ["Fuente técnica", "NHTSA vPIC"]
-    ]))
+        story.append(Spacer(1, 14))
+        story.append(Paragraph("Privacidad", styles["NXSection"]))
+        story.append(Paragraph("El SSN no se incluye en este documento. El número de póliza se muestra parcialmente para reducir la exposición de datos sensibles. La validación técnica del VIN no acredita propiedad del vehículo ni autenticidad de la póliza.", styles["NXSmall"]))
+        story.append(Spacer(1, 12))
+        story.append(Paragraph(f'Generado por NEXUS AI · {pdf_text(now())} · Documento {pdf_text(data["passport_ref"])}', styles["NXSmall"]))
 
-    story.append(Spacer(1, 14))
-    story.append(Paragraph("Privacidad", styles["NXSection"]))
-    story.append(Paragraph("El SSN no se incluye en este documento. El número de póliza se muestra parcialmente para reducir la exposición de datos sensibles. La validación técnica del VIN no acredita propiedad del vehículo ni autenticidad de la póliza.", styles["NXSmall"]))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(f'Generado por NEXUS AI · {pdf_text(now())} · Documento {pdf_text(data["passport_ref"])}', styles["NXSmall"]))
+        try:
+            doc.build(story)
+            pdf=buf.getvalue()
+            if not pdf.startswith(b"%PDF"):
+                raise RuntimeError("El documento PDF no pudo construirse correctamente.")
+        except Exception as exc:
+            app.logger.exception("vehicle_document PDF generation failed")
+            return jsonify({"error":"No fue posible generar el PDF.","detail":str(exc)}),500
+        add_event(registration_id, "vehicle_document_generated", "Vehicle registration summary PDF generated", "info", {"score":data["validation_score"]})
+        response=make_response(pdf)
+        response.headers["Content-Type"]="application/pdf"
+        response.headers["Content-Disposition"]=f'inline; filename="NEXUS_Vehiculo_{data["passport_ref"]}.pdf"'
+        response.headers["Cache-Control"]="no-store"
+        return response
 
-    try:
-        doc.build(story)
-        pdf=buf.getvalue()
-        if not pdf.startswith(b"%PDF"):
-            raise RuntimeError("El documento PDF no pudo construirse correctamente.")
-    except Exception as exc:
-        app.logger.exception("vehicle_document PDF generation failed")
-        return jsonify({"error":"No fue posible generar el PDF.","detail":str(exc)}),500
-    add_event(registration_id, "vehicle_document_generated", "Vehicle registration summary PDF generated", "info", {"score":data["validation_score"]})
-    response=make_response(pdf)
-    response.headers["Content-Type"]="application/pdf"
-    response.headers["Content-Disposition"]=f'inline; filename="NEXUS_Vehiculo_{data["passport_ref"]}.pdf"'
-    response.headers["Cache-Control"]="no-store"
-    return response
 
 
 @app.post("/api/validate")

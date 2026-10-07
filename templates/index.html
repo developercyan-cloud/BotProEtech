@@ -227,7 +227,7 @@ body.access-granted .access-gate{display:none}
 
  <div class="checks">
   <div class="checkItem"><strong id="c1">—</strong><span>Datos</span></div>
-  <div class="checkItem"><strong id="c2">—</strong><span>Contactooo</span></div>
+  <div class="checkItem"><strong id="c2">—</strong><span>Contactoo</span></div>
   <div class="checkItem"><strong id="c3">—</strong><span>Ubicación</span></div>
  </div>
  <div class="validationEngine">
@@ -239,22 +239,22 @@ body.access-granted .access-gate{display:none}
    <div class="scoreRow">
     <div class="scoreRing" id="scoreRing"><span class="scoreNumber" id="scoreNumber">—</span></div>
     <div class="scoreInfo">
-     <div class="scoreLabel">Readiness analysis</div>
-     <div class="scoreTitle" id="scoreTitle">Waiting for data</div>
-     <div class="scoreSub" id="scoreSub">The engine will analyze structure, consistency, contact and photo quality.</div>
+     <div class="scoreLabel">Análisis de preparación</div>
+     <div class="scoreTitle" id="scoreTitle">Esperando datos</div>
+     <div class="scoreSub" id="scoreSub">El motor analizará estructura, consistencia, contacto y calidad de la foto.</div>
     </div>
    </div>
    <div class="validationGrid">
-    <div class="vCheck" id="vIdentity"><div class="vIcon">◎</div><div class="vText"><strong>Perfil</strong><span>Waiting</span></div></div>
-    <div class="vCheck" id="vContactoo"><div class="vIcon">⌁</div><div class="vText"><strong>Contactoo</strong><span>Waiting</span></div></div>
-    <div class="vCheck" id="vUbicación"><div class="vIcon">⌖</div><div class="vText"><strong>Ubicación</strong><span>Waiting</span></div></div>
-    <div class="vCheck" id="vFace"><div class="vIcon">◉</div><div class="vText"><strong>Foto</strong><span>Waiting</span></div></div>
-    <div class="vCheck" id="vPlataforma"><div class="vIcon">◆</div><div class="vText"><strong>Plataforma</strong><span>Waiting</span></div></div>
-    <div class="vCheck" id="vInformación"><div class="vIcon">◇</div><div class="vText"><strong>Información</strong><span>Waiting</span></div></div>
+    <div class="vCheck" id="vIdentity"><div class="vIcon">◎</div><div class="vText"><strong>Perfil</strong><span>Esperando</span></div></div>
+    <div class="vCheck" id="vContacto"><div class="vIcon">⌁</div><div class="vText"><strong>Contacto</strong><span>Esperando</span></div></div>
+    <div class="vCheck" id="vUbicación"><div class="vIcon">⌖</div><div class="vText"><strong>Ubicación</strong><span>Esperando</span></div></div>
+    <div class="vCheck" id="vFace"><div class="vIcon">◉</div><div class="vText"><strong>Foto</strong><span>Esperando</span></div></div>
+    <div class="vCheck" id="vPlataforma"><div class="vIcon">◆</div><div class="vText"><strong>Plataforma</strong><span>Esperando</span></div></div>
+    <div class="vCheck" id="vInformación"><div class="vIcon">◇</div><div class="vText"><strong>Información</strong><span>Esperando</span></div></div>
    </div>
    <div class="scanLine"><i></i></div>
-   <div class="findings" id="findings"><div class="finding"><b></b> Engine ready for analysis</div></div>
-   <div class="riskBar"><div class="riskMeta"><span>Validation coverage</span><span id="coverageText">0%</span></div><div class="riskTrack"><i id="coverageBar"></i></div></div>
+   <div class="findings" id="findings"><div class="finding"><b></b> Motor listo para analizar</div></div>
+   <div class="riskBar"><div class="riskMeta"><span>Cobertura de validación</span><span id="coverageText">0%</span></div><div class="riskTrack"><i id="coverageBar"></i></div></div>
   </div>
  </div>
 
@@ -465,7 +465,7 @@ cameraStop.onclick=stopCamera;
 const engine={
  state:$("engineState"), ring:$("scoreRing"), number:$("scoreNumber"), title:$("scoreTitle"),
  sub:$("scoreSub"), findings:$("findings"), coverage:$("coverageBar"), coverageText:$("coverageText"),
- items:{identity:$("vIdentity"),contact:$("vContactoo"),location:$("vUbicación"),face:$("vFace"),platform:$("vPlataforma"),integrity:$("vInformación")}
+ items:{identity:$("vIdentity"),contact:$("vContacto"),location:$("vUbicación"),face:$("vFace"),platform:$("vPlataforma"),integrity:$("vInformación")}
 };
 function setCheck(key,state,text){
  const el=engine.items[key]; if(!el)return;
@@ -527,7 +527,16 @@ selfie_face_check:(selfieResult?.ok?"single_face_detected":"not_checked")
 try{
 const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify(payload)});
 const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible procesar la información.");
+
+// Registro principal completado: pasar explícitamente al Paso 2.
+if(typeof window.NEXUS_SHOW_VEHICLE_STEP === "function"){
+  window.NEXUS_SHOW_VEHICLE_STEP({service:service,registration_id:data.registration_id});
+}
 document.dispatchEvent(new CustomEvent("nexus:registration-success",{detail:{service:service,registration_id:data.registration_id}}));
+$("continue").disabled=false;
+$("continue").textContent="CONTINUAR AL PASO 2";
+$("status").className="status ok";
+$("status").textContent="Datos principales validados. Completa ahora la información del vehículo.";
 }catch(e){$("status").className="status error";$("status").textContent=e.message;$("continue").disabled=false;$("continue").textContent="VALIDAR Y CONTINUAR";}
 }
 $("continue").onclick=submit;
@@ -698,10 +707,10 @@ if(!tg)$("warning").style.display="block";
 
     const sequence=[
       {p:8,t:'Protegiendo tu información',h:'Creando tu documento',s:'NEXUS AI está protegiendo y organizando la información que proporcionaste.',ph:0},
-      {p:23,t:'Recopilando registration data',h:'Building your document',s:'Organizando tu perfil, contacto y ubicación.',ph:0},
-      {p:41,t:'Organizando document fields',h:'Building your document',s:'Preparando the registration document structure for the selected platform.',ph:1},
+      {p:23,t:'Recopilando datos del registro',h:'Creando tu documento',s:'Organizando tu perfil, contacto y ubicación.',ph:0},
+      {p:41,t:'Organizando document fields',h:'Creando tu documento',s:'Preparando the registration document structure for the selected platform.',ph:1},
       {p:59,t:'Generando document package',h:'Creando tu documento',s:'NEXUS AI está generando el documento y preparando la información para el registro.',ph:2},
-      {p:76,t:'Revisando la información',h:'Finalizing your document',s:'Aplicando una revisión final de consistencia antes de preparar la registro en la plataforma.',ph:2},
+      {p:76,t:'Revisando la información',h:'Finalizando tu documento',s:'Aplicando una revisión final de consistencia antes de preparar el registro en la plataforma.',ph:2},
       {p:91,t:'Preparando platform handoff',h:'Preparando registration',s:'Tu documento está siendo preparado para el proceso oficial de registro.',ph:3},
       {p:100,t:'Documento preparado',h:'Documento creado',s:'Tu documento está listo para continuar con el registro oficial.',ph:3}
     ];
@@ -716,7 +725,7 @@ if(!tg)$("warning").style.display="block";
       if(x.p===100){
         ready.hidden=false;
         cont.hidden=false;
-        document.getElementById('docxEta').textContent='LISTO FOR REGISTRO OFICIAL';
+        document.getElementById('docxEta').textContent='LISTO PARA EL REGISTRO OFICIAL';
       }else{
         document.getElementById('docxEta').textContent='PROCESANDO INFORMACIÓN...';
         setTimeout(tick,900);
@@ -859,10 +868,17 @@ function getName(){const a=(firstName?.value||"").trim(),b=(lastName?.value||"")
 function show(detail){
   if(nameEl)nameEl.textContent=getName()||"Nombre ingresado en el primer formulario";
   registrationId=detail?.registration_id||registrationId;
+  // Ocultar el resultado del primer paso y mostrar SIEMPRE el formulario del vehículo.
+  const result=document.getElementById("result");
+  if(result)result.classList.add("hidden");
   step.hidden=false;
+  step.removeAttribute("hidden");
+  step.style.display="block";
   validationBox.classList.remove("show");
   document.getElementById("vehicleStatus").textContent="";
-  step.scrollIntoView({behavior:"smooth",block:"start"});
+  const continueBtn=document.getElementById("continue");
+  if(continueBtn){continueBtn.disabled=false;continueBtn.textContent="CONTINUAR AL PASO 2";}
+  setTimeout(()=>step.scrollIntoView({behavior:"smooth",block:"start"}),60);
 }
 function hide(){step.hidden=true;}
 window.NEXUS_SHOW_VEHICLE_STEP=show;window.NEXUS_HIDE_VEHICLE_STEP=hide;

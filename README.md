@@ -91,3 +91,13 @@ Después de añadir `ACCESS_CODE` en Railway, haz un nuevo deploy. Si la variabl
 La Mini App ya no reutiliza tokens guardados ni acepta el token de lanzamiento como forma de saltarse la pantalla de acceso. Al abrir o volver a abrir la Mini App, solicita el código y emite un token nuevo para esa sesión. El token local también se elimina cuando la página se oculta o se descarga.
 
 Nota: el código del bot de Telegram continúa funcionando como primer control de acceso; según el flujo actual, el usuario puede tener que introducir el código en Telegram y después en la Mini App.
+
+
+## NEXUS 9.0 — Vehicle Validation 2.0
+- VIN format + check-digit validation.
+- NHTSA vPIC server-side VIN decoding with a short cache and rate limit.
+- Cross-checks VIN vs model year, make and model.
+- ZIP/address/date validation.
+- Vehicle score and findings UI.
+- Vehicle record persistence stores only the last 4 digits of the policy number.
+- NHTSA vPIC is used for technical vehicle data only; it does not verify ownership, identity, or insurance authenticity.

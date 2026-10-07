@@ -97,6 +97,10 @@ body.access-granted .access-gate{display:none}
 @keyframes gatePulse{0%,100%{transform:scale(.9);opacity:.8}50%{transform:scale(1.15);opacity:1}}
 </style>
 
+<style id="vin-autofill-style">
+.vin-autofill-status{min-height:17px;margin-top:6px;font-size:9px;color:#7f89a3}.vin-autofill-status.loading{color:#b79aff}.vin-autofill-status.ok{color:#63e6b4}.vin-autofill-status.error{color:#ff7f96}.vehicle-field input.autofilled,.vehicle-field select.autofilled{border-color:#35d399;box-shadow:0 0 0 1px #35d39922}
+</style>
+
 <style id="vehicle-step-style">
 .vehicle-step{max-width:720px;margin:22px auto;padding:22px;border:1px solid rgba(142,116,235,.22);border-radius:24px;background:linear-gradient(155deg,#111422,#080a12);box-sizing:border-box}.vehicle-step[hidden]{display:none!important}.vehicle-step-head{display:flex;justify-content:space-between;gap:14px}.vehicle-kicker{font-size:9px;letter-spacing:.16em;color:#9d83ff;font-weight:900}.vehicle-step h2{margin:7px 0 5px;font-size:25px}.vehicle-step p{margin:0;color:#7f89a3;font-size:12px}.vehicle-step-head>span{font-size:9px;color:#71e5bd;white-space:nowrap}.vehicle-summary{margin:18px 0;padding:12px 14px;border:1px solid #242a3a;border-radius:13px}.vehicle-summary small{display:block;color:#68728d;font-size:8px;margin-bottom:4px}.vehicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.vehicle-field.wide{grid-column:1/-1}.vehicle-field label{display:block;font-size:10px;font-weight:800;margin-bottom:6px}.vehicle-field input,.vehicle-field select{width:100%;height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #252c3e;background:#080b13;color:#eef0f8;padding:0 13px;outline:none}.vehicle-field input:focus,.vehicle-field select:focus{border-color:#8e6cff}.vehicle-field small{font-size:8px;color:#68728d}.vehicle-status{min-height:18px;margin-top:12px;font-size:10px;color:#ff9aaa}.vehicle-status.ok{color:#68e4b6}.vehicle-actions{display:flex;gap:10px;margin-top:15px}.vehicle-actions button{height:48px;border-radius:12px;font-weight:900;cursor:pointer}.vehicle-actions button:first-child{width:34%;border:1px solid #292f41;background:#0b0e17;color:#9ba4b8}.vehicle-actions button:last-child{flex:1;border:0;background:linear-gradient(100deg,#9b68ff,#6734d8);color:#fff}@media(max-width:560px){.vehicle-grid{grid-template-columns:1fr}.vehicle-field.wide{grid-column:auto}.vehicle-step-head{flex-direction:column}}
 </style>
@@ -266,7 +270,7 @@ body.access-granted .access-gate{display:none}
 <div class="vehicle-field"><label for="vehicleYear">Año</label><select id="vehicleYear" name="vehicle_year"><option value="">Selecciona el año</option><option value="2010">2010</option><option value="2011">2011</option><option value="2012">2012</option><option value="2013">2013</option><option value="2014">2014</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option></select></div>
 <div class="vehicle-field"><label for="vehicleMake">Marca</label><input id="vehicleMake" name="vehicle_make" autocomplete="organization" placeholder="Marca"></div>
 <div class="vehicle-field"><label for="vehicleModel">Modelo</label><input id="vehicleModel" name="vehicle_model" placeholder="Modelo"></div>
-<div class="vehicle-field wide"><label for="vehicleVin">Número VIN</label><input id="vehicleVin" name="vehicle_vin" maxlength="17" autocomplete="off" placeholder="17 caracteres"><small>Se validará estructura, dígito de control y datos del fabricante.</small></div>
+<div class="vehicle-field wide"><label for="vehicleVin">Número VIN</label><input id="vehicleVin" name="vehicle_vin" maxlength="17" autocomplete="off" placeholder="17 caracteres"><small>Al completar un VIN válido, NEXUS consultará automáticamente los datos técnicos y completará marca, modelo y año.</small><div id="vinAutofillStatus" class="vin-autofill-status" aria-live="polite"></div></div>
 <div class="vehicle-field wide"><label for="vehiclePolicy">Número de póliza</label><input id="vehiclePolicy" name="vehicle_policy" autocomplete="off" placeholder="Número de póliza"><small>No se considera una prueba de autenticidad de la póliza.</small></div>
 <div class="vehicle-field"><label for="vehicleStart">Fecha de inicio</label><input id="vehicleStart" name="vehicle_start" type="date"></div>
 <div class="vehicle-field"><label for="vehicleEnd">Fecha de fin</label><input id="vehicleEnd" name="vehicle_end" type="date"></div>
@@ -847,7 +851,10 @@ const nameEl=document.getElementById("vehicleNamePreview");
 const firstName=document.getElementById("first"), lastName=document.getElementById("last");
 const validationBox=document.getElementById("vehicleValidation");
 let registrationId=null;
+let vinDecodeTimer=null;
+let lastDecodedVin="";
 if(!step)return;
+
 function getName(){const a=(firstName?.value||"").trim(),b=(lastName?.value||"").trim();return [a,b].filter(Boolean).join(" ");}
 function show(detail){
   if(nameEl)nameEl.textContent=getName()||"Nombre ingresado en el primer formulario";
@@ -880,6 +887,45 @@ function renderValidation(v){
  if(v.decoded){document.getElementById("vvSource").innerHTML=`<strong>Datos técnicos:</strong> ${[v.decoded.manufacturer,v.decoded.make,v.decoded.model,v.decoded.model_year].filter(Boolean).join(" · ")||"Sin datos concluyentes"}. <strong>Fuente:</strong> NHTSA vPIC.`;}else document.getElementById("vvSource").innerHTML='<strong>Fuente:</strong> NHTSA vPIC. Esta consulta no verifica propiedad, identidad ni autenticidad del seguro.';
  document.getElementById("vvError").textContent=(v.findings||[]).join(" ");
 }
+
+const vinInput=document.getElementById("vehicleVin");
+const makeInput=document.getElementById("vehicleMake");
+const modelInput=document.getElementById("vehicleModel");
+const yearInput=document.getElementById("vehicleYear");
+const vinAutofillStatus=document.getElementById("vinAutofillStatus");
+function setVinStatus(text,cls=""){if(vinAutofillStatus){vinAutofillStatus.className="vin-autofill-status "+cls;vinAutofillStatus.textContent=text;}}
+function clientVinCheck(vin){
+ const map={A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,J:1,K:2,L:3,M:4,N:5,P:7,R:9,S:2,T:3,U:4,V:5,W:6,X:7,Y:8,Z:9};
+ const weights=[8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
+ if(!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin))return null;
+ let total=0;for(let i=0;i<17;i++){const c=vin[i];const v=/\d/.test(c)?Number(c):map[c];if(v==null)return null;total+=v*weights[i];}
+ const rem=total%11, expected=rem===10?"X":String(rem);return {ok:vin[8]===expected,expected};
+}
+async function autofillVehicleFromVin(){
+ const vin=vinInput.value.trim().toUpperCase();vinInput.value=vin;
+ if(vin.length<17){setVinStatus(vin.length?`VIN: ${vin.length}/17 caracteres.`:"");lastDecodedVin="";return;}
+ const check=clientVinCheck(vin);
+ if(!check?.ok){setVinStatus(`VIN no válido: el dígito de control debería ser ${check?.expected||"—"}.`,"error");return;}
+ if(vin===lastDecodedVin)return;
+ lastDecodedVin=vin;setVinStatus("VIN válido. Consultando datos técnicos…","loading");
+ makeInput.classList.remove("autofilled");modelInput.classList.remove("autofilled");yearInput.classList.remove("autofilled");
+ try{
+  const r=await fetch("/api/vehicle/decode",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":(window.Telegram?.WebApp?.initData||""),"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify({vin})});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(data.error||"No se pudieron obtener los datos del VIN.");
+  const d=data.decoded||{};
+  if(d.make){makeInput.value=d.make;makeInput.classList.add("autofilled");}
+  if(d.model){modelInput.value=d.model;modelInput.classList.add("autofilled");}
+  if(d.model_year && /^20\d{2}$/.test(String(d.model_year))){
+    const y=String(d.model_year);const option=[...yearInput.options].find(o=>o.value===y);if(option){yearInput.value=y;yearInput.classList.add("autofilled");}
+  }
+  const parts=[d.make,d.model,d.model_year].filter(Boolean);
+  if(parts.length){setVinStatus(`✓ Datos autocompletados: ${parts.join(" · ")} · Fuente: NHTSA vPIC.","ok");}
+  else setVinStatus("VIN válido, pero no hay datos suficientes para autocompletar.","error");
+ }catch(e){lastDecodedVin="";setVinStatus(e.message||"No fue posible consultar el VIN.","error");}
+}
+vinInput.addEventListener("input",()=>{clearTimeout(vinDecodeTimer);lastDecodedVin="";vinInput.value=vinInput.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,"").slice(0,17);vinDecodeTimer=setTimeout(autofillVehicleFromVin,350);});
+vinInput.addEventListener("blur",autofillVehicleFromVin);
 
 document.getElementById("vehicleContinue").onclick=async function(){
  const ids=["vehicleAddress","vehicleCity","vehicleZip","vehicleYear","vehicleMake","vehicleModel","vehicleVin","vehiclePolicy","vehicleStart","vehicleEnd"];

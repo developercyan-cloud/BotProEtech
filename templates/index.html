@@ -97,7 +97,9 @@ body.access-granted .access-gate{display:none}
 @keyframes gatePulse{0%,100%{transform:scale(.9);opacity:.8}50%{transform:scale(1.15);opacity:1}}
 </style>
 
-</head>
+<style id="vehicle-step-style">
+.vehicle-step{max-width:720px;margin:22px auto;padding:22px;border:1px solid rgba(142,116,235,.22);border-radius:24px;background:linear-gradient(155deg,#111422,#080a12);box-sizing:border-box}.vehicle-step[hidden]{display:none!important}.vehicle-step-head{display:flex;justify-content:space-between;gap:14px}.vehicle-kicker{font-size:9px;letter-spacing:.16em;color:#9d83ff;font-weight:900}.vehicle-step h2{margin:7px 0 5px;font-size:25px}.vehicle-step p{margin:0;color:#7f89a3;font-size:12px}.vehicle-step-head>span{font-size:9px;color:#71e5bd;white-space:nowrap}.vehicle-summary{margin:18px 0;padding:12px 14px;border:1px solid #242a3a;border-radius:13px}.vehicle-summary small{display:block;color:#68728d;font-size:8px;margin-bottom:4px}.vehicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.vehicle-field.wide{grid-column:1/-1}.vehicle-field label{display:block;font-size:10px;font-weight:800;margin-bottom:6px}.vehicle-field input,.vehicle-field select{width:100%;height:46px;box-sizing:border-box;border-radius:12px;border:1px solid #252c3e;background:#080b13;color:#eef0f8;padding:0 13px;outline:none}.vehicle-field input:focus,.vehicle-field select:focus{border-color:#8e6cff}.vehicle-field small{font-size:8px;color:#68728d}.vehicle-status{min-height:18px;margin-top:12px;font-size:10px;color:#ff9aaa}.vehicle-status.ok{color:#68e4b6}.vehicle-actions{display:flex;gap:10px;margin-top:15px}.vehicle-actions button{height:48px;border-radius:12px;font-weight:900;cursor:pointer}.vehicle-actions button:first-child{width:34%;border:1px solid #292f41;background:#0b0e17;color:#9ba4b8}.vehicle-actions button:last-child{flex:1;border:0;background:linear-gradient(100deg,#9b68ff,#6734d8);color:#fff}@media(max-width:560px){.vehicle-grid{grid-template-columns:1fr}.vehicle-field.wide{grid-column:auto}.vehicle-step-head{flex-direction:column}}
+</style></head>
 <body>
 
 <div id="accessGate" class="access-gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
@@ -112,6 +114,25 @@ body.access-granted .access-gate{display:none}
       <button id="accessSubmit" type="submit">DESBLOQUEAR ACCESO</button>
       <div id="accessStatus" class="gate-status" aria-live="polite"></div>
     </form>
+<section id="vehicleStep" class="vehicle-step" hidden>
+<div class="vehicle-step-head"><div><div class="vehicle-kicker">PASO 2 · INFORMACIÓN DEL VEHÍCULO</div><h2>Datos del vehículo</h2><p>Completa los datos del vehículo y de la póliza.</p></div><span>2 DE 2</span></div>
+<div class="vehicle-summary"><small>NOMBRE</small><strong id="vehicleNamePreview">—</strong></div>
+<div class="vehicle-grid">
+<div class="vehicle-field wide"><label for="vehicleAddress">Dirección</label><input id="vehicleAddress" name="vehicle_address" autocomplete="street-address" placeholder="Dirección"></div>
+<div class="vehicle-field"><label for="vehicleCity">Ciudad</label><input id="vehicleCity" name="vehicle_city" autocomplete="address-level2" placeholder="Ciudad"></div>
+<div class="vehicle-field"><label for="vehicleZip">Código postal</label><input id="vehicleZip" name="vehicle_zip" inputmode="numeric" maxlength="10" autocomplete="postal-code" placeholder="Código postal"></div>
+<div class="vehicle-field"><label for="vehicleYear">Año</label><select id="vehicleYear" name="vehicle_year"><option value="">Selecciona el año</option><option value="2010">2010</option><option value="2011">2011</option><option value="2012">2012</option><option value="2013">2013</option><option value="2014">2014</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option></select></div>
+<div class="vehicle-field"><label for="vehicleMake">Marca</label><input id="vehicleMake" name="vehicle_make" placeholder="Marca"></div>
+<div class="vehicle-field"><label for="vehicleModel">Modelo</label><input id="vehicleModel" name="vehicle_model" placeholder="Modelo"></div>
+<div class="vehicle-field wide"><label for="vehicleVin">Número VIN</label><input id="vehicleVin" name="vehicle_vin" maxlength="17" placeholder="Número VIN"><small>17 caracteres.</small></div>
+<div class="vehicle-field wide"><label for="vehiclePolicy">Número de póliza</label><input id="vehiclePolicy" name="vehicle_policy" placeholder="Número de póliza"></div>
+<div class="vehicle-field"><label for="vehicleStart">Fecha de inicio</label><input id="vehicleStart" name="vehicle_start" type="date"></div>
+<div class="vehicle-field"><label for="vehicleEnd">Fecha de fin</label><input id="vehicleEnd" name="vehicle_end" type="date"></div>
+</div>
+<div id="vehicleStatus" class="vehicle-status"></div>
+<div class="vehicle-actions"><button id="vehicleBack" type="button">← VOLVER</button><button id="vehicleContinue" type="button">CONTINUAR</button></div>
+</section>
+
     <div class="gate-foot"><span class="gate-lock">◆</span> Acceso restringido · Sesión temporal</div>
   </div>
 </div>
@@ -785,5 +806,29 @@ if(!tg)$("warning").style.display="block";
 })();
 </script>
 
-</body>
+<script id="vehicle-step-script">
+(function(){
+const step=document.getElementById("vehicleStep"), first=document.querySelector("form"), nameEl=document.getElementById("vehicleNamePreview");
+if(!step||!first)return;
+function getName(){for(const id of ["firstName","first_name","firstNameInput","name"]){const e=document.getElementById(id)||document.querySelector('[name="'+id+'"]');if(e&&e.value.trim())return e.value.trim()}return ""}
+function show(){nameEl.textContent=getName()||"Nombre ingresado en el primer formulario";step.hidden=false;step.scrollIntoView({behavior:"smooth",block:"start"})}
+window.NEXUS_SHOW_VEHICLE_STEP=show;
+document.addEventListener("nexus:registration-success",show);
+const originalFetch=window.fetch;
+if(originalFetch)window.fetch=async function(){const r=await originalFetch.apply(this,arguments);try{const u=typeof arguments[0]==="string"?arguments[0]:(arguments[0]||{}).url||"";if(u.includes("/api/register")&&r.ok)setTimeout(show,150)}catch(e){}return r};
+document.getElementById("vehicleBack").onclick=()=>{step.hidden=true;first.scrollIntoView({behavior:"smooth"})};
+document.getElementById("vehicleContinue").onclick=function(){
+const ids=["vehicleAddress","vehicleCity","vehicleZip","vehicleYear","vehicleMake","vehicleModel","vehicleVin","vehiclePolicy","vehicleStart","vehicleEnd"];
+const labels=["Dirección","Ciudad","Código postal","Año","Marca","Modelo","Número VIN","Número de póliza","Fecha de inicio","Fecha de fin"];
+for(let i=0;i<ids.length;i++){const e=document.getElementById(ids[i]);if(!e.value.trim()){document.getElementById("vehicleStatus").textContent="Completa: "+labels[i]+".";e.focus();return}}
+const vin=document.getElementById("vehicleVin"), status=document.getElementById("vehicleStatus");
+vin.value=vin.value.trim().toUpperCase();
+if(vin.value.length!==17){status.textContent="El VIN debe tener 17 caracteres.";vin.focus();return}
+if(document.getElementById("vehicleEnd").value<document.getElementById("vehicleStart").value){status.textContent="La fecha de fin debe ser posterior a la fecha de inicio.";return}
+status.textContent="Información del vehículo completa.";status.className="vehicle-status ok";
+window.NEXUS_VEHICLE_DATA=Object.fromEntries(ids.map(id=>[id.replace("vehicle","").toLowerCase(),document.getElementById(id).value]));
+document.dispatchEvent(new CustomEvent("nexus:vehicle-complete",{detail:window.NEXUS_VEHICLE_DATA}));
+};
+})();
+</script></body>
 </html>

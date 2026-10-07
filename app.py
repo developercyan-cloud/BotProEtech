@@ -12,8 +12,13 @@ from urllib.parse import parse_qsl, quote
 from urllib.request import Request, urlopen
 from io import BytesIO
 from urllib.error import URLError, HTTPError
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, make_response
 
 import cv2
 import numpy as np

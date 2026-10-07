@@ -637,6 +637,65 @@ def register():
     }), 201
 
 
+@app.post("/api/vehicle/decode")
+def vehicle_decode():
+    """Decode a VIN as the user types; does not create or persist a vehicle record."""
+    gate_response = access_required_response()
+    if gate_response:
+        return gate_response
+    if not rate_limit("vehicle-decode", 12, 60):
+        return jsonify({"error":"Demasiadas consultas de VIN. Espera un momento."}), 429
+    valid, parsed = validate_init_data(request.headers.get("X-Telegram-Init-Data", ""))
+    if not valid:
+        return jsonify({"error":"Invalid Telegram authentication"}), 401
+    body = request.get_json(silent=True) or {}
+    vin = clean(body.get("vin"), 17).upper()
+    if not re.fullmatch(r"[A-HJ-NPR-Z0-9]{17}", vin):
+        return jsonify({"error":"VIN incompleto o con caracteres no permitidos."}), 400
+    check_ok, expected = vin_check_digit(vin)
+    if not check_ok:
+        return jsonify({"ok":False,"valid":False,"check_digit":False,"expected_check_digit":expected,"error":"El dígito de control del VIN no coincide."}), 422
+    key = f"autofill:{vin}"
+    now_ts = time.time()
+    with _vehicle_cache_lock:
+        cached = _vehicle_cache.get(key)
+        if cached and now_ts - cached[0] < 900:
+            decoded = cached[1]
+        else:
+            decoded = None
+    if decoded is None:
+        url = f"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/{quote(vin, safe='')}?format=json"
+        req = Request(url, headers={"User-Agent":"NEXUS-AI-Vehicle-Validation/9.1"})
+        try:
+            with urlopen(req, timeout=8) as resp:
+                raw = resp.read(1024 * 1024)
+            data = json.loads(raw.decode("utf-8", errors="replace"))
+            row = (data.get("Results") or [{}])[0]
+            decoded = {
+                "vin": row.get("VIN") or vin,
+                "manufacturer": clean(row.get("Manufacturer"), 160),
+                "make": clean(row.get("Make"), 80),
+                "model": clean(row.get("Model"), 100),
+                "model_year": clean(row.get("ModelYear"), 4),
+                "vehicle_type": clean(row.get("VehicleType"), 100),
+                "body_class": clean(row.get("BodyClass"), 120),
+                "plant_country": clean(row.get("PlantCountry"), 80),
+                "error_code": clean(row.get("ErrorCode"), 80),
+                "error_text": clean(row.get("ErrorText"), 240),
+            }
+            with _vehicle_cache_lock:
+                _vehicle_cache[key] = (now_ts, decoded)
+        except (URLError, HTTPError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+            return jsonify({"error":"No fue posible consultar NHTSA vPIC en este momento."}), 503
+    if not decoded.get("make") and not decoded.get("model") and not decoded.get("model_year"):
+        return jsonify({"ok":False,"valid":True,"check_digit":True,"decoded":decoded,"error":"El VIN es estructuralmente válido, pero NHTSA no devolvió datos suficientes para autocompletar."}), 422
+    return jsonify({
+        "ok":True,"valid":True,"check_digit":True,
+        "decoded":decoded,
+        "source":"NHTSA vPIC"
+    })
+
+
 @app.post("/api/vehicle/validate")
 def vehicle_validate():
     gate_response = access_required_response()

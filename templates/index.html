@@ -768,10 +768,9 @@ if(!tg)$("warning").style.display="block";
         openBtn.style.cssText='width:100%;margin-top:10px;padding:14px;border:1px solid rgba(76,225,176,.45);border-radius:14px;background:rgba(76,225,176,.08);color:#63e6b4;font-weight:900;letter-spacing:.06em;cursor:pointer;';
         actions.appendChild(openBtn);
       }
-      openBtn.textContent='ABRIR PDF';openBtn.hidden=false;
+      openBtn.textContent='ABRIR DOCUMENTO';openBtn.hidden=false;
       openBtn.onclick=()=>{ location.href=absolute; };
       pdfBtn.textContent='PDF GENERADO ✓';
-      setTimeout(()=>openBtn.click(),250);
     }catch(e){pdfBtn.textContent='ERROR · REINTENTAR';alert(e.message||'No fue posible preparar el PDF.');}
     finally{setTimeout(()=>{pdfBtn.disabled=false;if(pdfBtn.textContent==='PDF GENERADO ✓')pdfBtn.textContent=old;},1800);}
   });

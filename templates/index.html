@@ -371,7 +371,7 @@ async function validateSelfieFile(file){
     fd.append("selfie",file,file.name||"selfie.jpg");
     const r=await fetch("/api/face-check",{
       method:"POST",
-      headers:{"X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},
+      headers:{"X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":(window.NEXUS_GET_ACCESS_TOKEN?window.NEXUS_GET_ACCESS_TOKEN():sessionStorage.getItem("nexus_access_token"))||""},
       body:fd
     });
     const data=await r.json().catch(()=>({}));
@@ -525,7 +525,7 @@ const payload={service,first_name:fields.first.value.trim(),last_name:fields.las
 selfie_face_check:(selfieResult?.ok?"single_face_detected":"not_checked")
 };
 try{
-const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify(payload)});
+const r=await fetch("/api/register",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg.initData,"X-Nexus-Access-Token":(window.NEXUS_GET_ACCESS_TOKEN?window.NEXUS_GET_ACCESS_TOKEN():sessionStorage.getItem("nexus_access_token"))||""},body:JSON.stringify(payload)});
 const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible procesar la información.");
 
 // Registro principal completado: pasar explícitamente al Paso 2.
@@ -787,6 +787,7 @@ if(!tg)$("warning").style.display="block";
 
 <script id="nexus-access-gate-script">
 (function(){
+  let nexusAccessToken="";
   const gate=document.getElementById("accessGate");
   const form=document.getElementById("accessForm");
   const input=document.getElementById("accessCode");
@@ -799,6 +800,7 @@ if(!tg)$("warning").style.display="block";
     status.className="gate-status"+(kind?" "+kind:"");
   }
   function unlock(token){
+    nexusAccessToken=token;
     sessionStorage.setItem("nexus_access_token",token);
     document.body.classList.add("access-granted");
     gate.setAttribute("aria-hidden","true");
@@ -814,6 +816,7 @@ if(!tg)$("warning").style.display="block";
   async function boot(){
     // Require the code on every Mini App opening. Do not trust a token saved by a prior opening
     // or a reusable token embedded in the Telegram launch URL.
+    nexusAccessToken="";
     sessionStorage.removeItem("nexus_access_token");
     const query=new URLSearchParams(location.search);
     if(query.has("nexus_access")){
@@ -841,14 +844,25 @@ if(!tg)$("warning").style.display="block";
     }catch(err){setStatus(err.message||"No se pudo verificar el código.");}
     finally{button.disabled=false;button.textContent="DESBLOQUEAR ACCESO";}
   });
-  document.addEventListener("visibilitychange",function(){
-    if(document.visibilityState==="hidden"){
-      sessionStorage.removeItem("nexus_access_token");
-    }
-  });
+  // Do not clear the token on visibilitychange. Telegram WebViews can briefly
+  // report hidden while opening/using native UI (camera, keyboard, etc.).
+  // Clearing here caused valid sessions to lose authorization mid-flow.
   window.addEventListener("pagehide",function(){
+    nexusAccessToken="";
     sessionStorage.removeItem("nexus_access_token");
   });
+  window.NEXUS_GET_ACCESS_TOKEN=function(){
+    return nexusAccessToken || sessionStorage.getItem("nexus_access_token") || "";
+  };
+  window.NEXUS_REQUIRE_ACCESS=function(){
+    nexusAccessToken="";
+    sessionStorage.removeItem("nexus_access_token");
+    document.body.classList.remove("access-granted");
+    gate.style.display="flex";
+    gate.setAttribute("aria-hidden","false");
+    setStatus("Introduce el código para continuar.");
+    setTimeout(()=>input.focus(),100);
+  };
   boot();
 })();
 </script>
@@ -926,8 +940,13 @@ async function autofillVehicleFromVin(){
  lastDecodedVin=vin;setVinStatus("VIN válido. Consultando datos técnicos…","loading");
  makeInput.classList.remove("autofilled");modelInput.classList.remove("autofilled");yearInput.classList.remove("autofilled");
  try{
-  const r=await fetch("/api/vehicle/decode",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":(window.Telegram?.WebApp?.initData||""),"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify({vin})});
+  const r=await fetch("/api/vehicle/decode",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":(window.Telegram?.WebApp?.initData||""),"X-Nexus-Access-Token":(window.NEXUS_GET_ACCESS_TOKEN?window.NEXUS_GET_ACCESS_TOKEN():sessionStorage.getItem("nexus_access_token"))||""},body:JSON.stringify({vin})});
   const data=await r.json().catch(()=>({}));
+  if(r.status===401){
+    setVinStatus("La sesión de acceso expiró. Introduce nuevamente el código de acceso.","error");
+    window.NEXUS_REQUIRE_ACCESS?.();
+    return;
+  }
   if(!r.ok)throw new Error(data.error||"No se pudieron obtener los datos del VIN.");
   const d=data.decoded||{};
   if(d.make){makeInput.value=d.make;makeInput.classList.add("autofilled");}
@@ -959,7 +978,7 @@ document.getElementById("vehicleContinue").onclick=async function(){
  resetValidation();this.disabled=true;this.textContent="VALIDANDO VEHÍCULO…";status.textContent="NEXUS está consultando y comparando los datos técnicos…";status.className="vehicle-status";
  const payload={registration_id:registrationId,address:document.getElementById("vehicleAddress").value.trim(),city:document.getElementById("vehicleCity").value.trim(),zip:zip.value,year:Number(document.getElementById("vehicleYear").value),make:document.getElementById("vehicleMake").value.trim(),model:document.getElementById("vehicleModel").value.trim(),vin:vin.value,policy_number:document.getElementById("vehiclePolicy").value.trim(),start_date:start,end_date:end};
  try{
-  const r=await fetch("/api/vehicle/validate",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":(window.Telegram?.WebApp?.initData||""),"X-Nexus-Access-Token":sessionStorage.getItem("nexus_access_token")||""},body:JSON.stringify(payload)});
+  const r=await fetch("/api/vehicle/validate",{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":(window.Telegram?.WebApp?.initData||""),"X-Nexus-Access-Token":(window.NEXUS_GET_ACCESS_TOKEN?window.NEXUS_GET_ACCESS_TOKEN():sessionStorage.getItem("nexus_access_token"))||""},body:JSON.stringify(payload)});
   const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"No fue posible validar el vehículo.");
   renderValidation(data.validation||{});
   if(data.validation?.status!=="ready"){

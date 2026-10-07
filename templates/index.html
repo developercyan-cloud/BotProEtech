@@ -760,9 +760,23 @@ if(!tg)$("warning").style.display="block";
       const token=(window.NEXUS_GET_ACCESS_TOKEN?window.NEXUS_GET_ACCESS_TOKEN():sessionStorage.getItem('nexus_access_token'))||'';
       const r=await fetch('/api/vehicle/document',{method:'POST',headers:{'Content-Type':'application/json','X-Telegram-Init-Data':(window.Telegram?.WebApp?.initData||''),'X-Nexus-Access-Token':token},body:JSON.stringify({registration_id:activeRegistrationId})});
       if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'No fue posible generar el PDF.');}
-      const blob=await r.blob();const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.download='NEXUS_Vehiculo.pdf';document.body.appendChild(a);a.click();a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      const blob=await r.blob();
+      if(!blob.size || blob.type.indexOf('pdf')===-1) throw new Error('El servidor no devolvió un PDF válido.');
+      const url=URL.createObjectURL(blob);
+      let openBtn=document.getElementById('nexusOpenPdf');
+      if(!openBtn){
+        openBtn=document.createElement('button');
+        openBtn.id='nexusOpenPdf'; openBtn.type='button'; openBtn.textContent='ABRIR PDF';
+        openBtn.style.cssText='width:100%;margin-top:10px;padding:14px;border:1px solid rgba(76,225,176,.45);border-radius:14px;background:rgba(76,225,176,.08);color:#63e6b4;font-weight:900;letter-spacing:.06em;cursor:pointer;';
+        actions.appendChild(openBtn);
+      }
+      openBtn.onclick=()=>{
+        const w=window.open(url,'_blank','noopener');
+        if(!w){ location.href=url; }
+      };
+      openBtn.hidden=false;
+      const a=document.createElement('a');a.href=url;a.download='NEXUS_Vehiculo.pdf';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
       pdfBtn.textContent='PDF GENERADO ✓';
     }catch(e){pdfBtn.textContent='ERROR · REINTENTAR';alert(e.message||'No fue posible generar el PDF.');}
     finally{setTimeout(()=>{pdfBtn.disabled=false;if(pdfBtn.textContent==='PDF GENERADO ✓')pdfBtn.textContent=old;},1800);}

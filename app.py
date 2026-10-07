@@ -55,6 +55,8 @@ _rate_lock = threading.Lock()
 _rate = {}
 _vehicle_cache = {}
 _vehicle_cache_lock = threading.Lock()
+_pdf_cache = {}
+_pdf_cache_lock = threading.Lock()
 
 SERVICES = {"uber", "doordash", "lyft", "amazon", "grubhub"}
 
@@ -820,31 +822,69 @@ def vehicle_document_link():
     except Exception:
         return jsonify({"error": "Registro inválido."}), 400
     conn = db()
-    row = conn.execute("""SELECT r.id FROM registrations r JOIN vehicle_details v ON v.registration_id=r.id
+    row = conn.execute("""SELECT r.id,r.service,r.first_name,r.last_name,r.email,r.phone,r.state,r.city,r.passport_ref,r.created_at,
+                                v.address,v.city AS vehicle_city,v.zip_code,v.model_year,v.make,v.model,v.vin,v.policy_last4,v.start_date,v.end_date,v.validation_score,v.validation_status,v.decoded_json
+                         FROM registrations r JOIN vehicle_details v ON v.registration_id=r.id
                          WHERE r.id=? AND r.telegram_user_id=? AND v.validation_status='ready'""", (registration_id, telegram_id)).fetchone()
     conn.close()
     if not row:
         return jsonify({"error": "No existe un vehículo validado para este registro."}), 404
+    data=dict(row)
+    try:
+        decoded=json.loads(data.get("decoded_json") or "{}")
+    except Exception:
+        decoded={}
+    pdf_response = build_vehicle_pdf_response(data, decoded, registration_id)
+    if getattr(pdf_response, "status_code", 500) != 200:
+        detail = None
+        try: detail = pdf_response.get_json()
+        except Exception: pass
+        return jsonify({"error":"No fue posible preparar el PDF.","detail":detail or "Error del generador PDF"}), 500
+    pdf_bytes = pdf_response.get_data()
     token = issue_document_token(registration_id)
-    return jsonify({"ok": True, "url": f"/api/vehicle/document/view?token={token}"})
+    with _pdf_cache_lock:
+        _pdf_cache[token] = {"expires": time.time() + 10*60, "pdf": pdf_bytes, "filename": f'NEXUS_Vehiculo_{data["passport_ref"]}.pdf'}
+        now_ts=time.time()
+        for k,v in list(_pdf_cache.items()):
+            if v.get("expires",0) < now_ts:
+                _pdf_cache.pop(k,None)
+    return jsonify({"ok": True, "url": f"/api/vehicle/document/page?token={token}"})
+
+@app.get("/api/vehicle/document/page")
+def vehicle_document_page():
+    token = request.args.get("token", "")
+    if not valid_document_token(token):
+        return make_response("Enlace del documento expirado o no válido.", 401)
+    with _pdf_cache_lock:
+        item = _pdf_cache.get(token)
+    if not item or item.get("expires",0) < time.time():
+        return make_response("El documento ya no está disponible. Genera uno nuevo.", 410)
+    pdf_url = "/api/vehicle/document/file?token=" + quote(token, safe="")
+    html = '''<!doctype html><html lang="es"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEXUS AI · Documento</title>
+<style>body{margin:0;background:#0b0d16;color:#f5f7ff;font-family:Arial,sans-serif}.wrap{max-width:900px;margin:auto;padding:20px}.card{background:#111522;border:1px solid #2b3150;border-radius:18px;padding:18px}h1{font-size:22px;margin:0 0 8px}p{color:#9da5bb}a{display:block;text-align:center;text-decoration:none;margin:10px 0;padding:15px;border-radius:13px;font-weight:800}.view{background:#7c3aed;color:white}.download{background:#162033;color:#8ff0c4;border:1px solid #315a4d}iframe{width:100%;height:70vh;border:1px solid #292f46;border-radius:14px;background:white;margin-top:15px}</style></head><body><div class="wrap"><div class="card"><h1>📄 Documento NEXUS preparado</h1><p>El documento fue generado correctamente. Puedes visualizarlo o descargarlo.</p><a class="view" href="__PDF_URL__" target="_blank" rel="noopener">ABRIR PDF</a><a class="download" href="__PDF_URL__" download>DESCARGAR PDF</a><iframe src="__PDF_URL__" title="Documento PDF"></iframe></div></div></body></html>'''.replace("__PDF_URL__", pdf_url)
+    response=make_response(html)
+    response.headers["Content-Type"]="text/html; charset=utf-8"
+    response.headers["Cache-Control"]="no-store"
+    return response
+
+@app.get("/api/vehicle/document/file")
+def vehicle_document_file():
+    token = request.args.get("token", "")
+    if not valid_document_token(token):
+        return jsonify({"error":"El enlace del documento ha expirado o no es válido."}), 401
+    with _pdf_cache_lock:
+        item = _pdf_cache.get(token)
+    if not item or item.get("expires",0) < time.time():
+        return jsonify({"error":"El documento ya no está disponible. Genera uno nuevo."}), 410
+    response=make_response(item["pdf"])
+    response.headers["Content-Type"]="application/pdf"
+    response.headers["Content-Disposition"]=f'inline; filename="{item["filename"]}"'
+    response.headers["Cache-Control"]="no-store"
+    return response
 
 @app.get("/api/vehicle/document/view")
 def vehicle_document_view():
-    registration_id = valid_document_token(request.args.get("token", ""))
-    if not registration_id:
-        return jsonify({"error": "El enlace del documento ha expirado o no es válido."}), 401
-    conn = db()
-    row = conn.execute("""SELECT r.id,r.service,r.first_name,r.last_name,r.email,r.phone,r.state,r.city,r.passport_ref,r.created_at,
-                                v.address,v.city AS vehicle_city,v.zip_code,v.model_year,v.make,v.model,v.vin,v.policy_last4,v.start_date,v.end_date,v.validation_score,v.validation_status,v.decoded_json
-                         FROM registrations r JOIN vehicle_details v ON v.registration_id=r.id
-                         WHERE r.id=? AND v.validation_status='ready'""", (registration_id,)).fetchone()
-    conn.close()
-    if not row:
-        return jsonify({"error": "No existe un vehículo validado para este registro."}), 404
-    data=dict(row)
-    try: decoded=json.loads(data.get("decoded_json") or "{}")
-    except Exception: decoded={}
-    return build_vehicle_pdf_response(data, decoded, registration_id)
+    return vehicle_document_file()
 
 @app.post("/api/vehicle/document")
 def vehicle_document():

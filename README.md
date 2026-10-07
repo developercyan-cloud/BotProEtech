@@ -101,3 +101,8 @@ Nota: el código del bot de Telegram continúa funcionando como primer control d
 - Vehicle score and findings UI.
 - Vehicle record persistence stores only the last 4 digits of the policy number.
 - NHTSA vPIC is used for technical vehicle data only; it does not verify ownership, identity, or insurance authenticity.
+
+## NEXUS 10.2 vehicle VIN fix
+- European/non-North-American VINs whose WMI is not 1-5 are treated as having an inconclusive NHTSA check digit rather than being falsely rejected.
+- VIN position 10 is mapped to the plausible 2010-2026 model-year cycle before the vPIC query, avoiding false 30-year-cycle results such as J -> 1988 when the intended current cycle is 2018.
+- The inferred year is used for VIN autofill and vehicle validation.

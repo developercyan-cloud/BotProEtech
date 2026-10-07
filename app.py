@@ -17,6 +17,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.enums import TA_CENTER
 
 from flask import Flask, jsonify, request, render_template, make_response
 
@@ -24,6 +25,11 @@ import cv2
 import numpy as np
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+
+def pdf_text(value):
+    """Escape user/vehicle text before placing it inside ReportLab Paragraph markup."""
+    from xml.sax.saxutils import escape
+    return escape("" if value is None else str(value))
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "").strip()
@@ -256,6 +262,12 @@ def vin_check_digit(vin):
     vin = vin.upper()
     if len(vin) != 17 or not re.fullmatch(r"[A-HJ-NPR-Z0-9]{17}", vin):
         return False, None
+    # NHTSA's check-digit convention is applicable to North-American VINs.
+    # Many European VINs (for example WMI starting with W) legitimately do not
+    # use the same check-digit scheme. Treat those as inconclusive rather than
+    # falsely rejecting an otherwise decodable VIN.
+    if vin[0] not in "12345":
+        return None, None
     total = 0
     for char, weight in zip(vin, VIN_WEIGHTS):
         value = int(char) if char.isdigit() else VIN_TRANSLITERATION.get(char)
@@ -266,6 +278,20 @@ def vin_check_digit(vin):
     expected = "X" if remainder == 10 else str(remainder)
     return vin[8] == expected, expected
 
+def infer_vin_model_year(vin):
+    """Return the plausible 2010-2026 model year encoded by VIN position 10."""
+    code = vin[9].upper() if len(vin) >= 10 else ""
+    cycles = {
+        "A": [2010, 2040], "B": [2011, 2041], "C": [2012, 2042],
+        "D": [2013, 2043], "E": [2014, 2044], "F": [2015, 2045],
+        "G": [2016, 2046], "H": [2017, 2047], "J": [2018, 2048],
+        "K": [2019, 2049], "L": [2020, 2050], "M": [2021, 2051],
+        "N": [2022, 2052], "P": [2023, 2053], "R": [2024, 2054],
+        "S": [2025, 2055], "T": [2026, 2056],
+    }
+    vals = cycles.get(code, [])
+    return next((y for y in vals if 2010 <= y <= 2026), None)
+
 
 def fetch_nhtsa_vin(vin, model_year):
     key = f"{vin}:{model_year}"
@@ -275,7 +301,7 @@ def fetch_nhtsa_vin(vin, model_year):
         if cached and now_ts - cached[0] < 900:
             return cached[1]
     url = f"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/{quote(vin, safe='')}?format=json&modelyear={int(model_year)}"
-    req = Request(url, headers={"User-Agent": "NEXUS-AI-Vehicle-Validation/9.0"})
+    req = Request(url, headers={"User-Agent": "NEXUS-AI-Vehicle-Validation/10.2"})
     try:
         with urlopen(req, timeout=8) as resp:
             raw = resp.read(1024 * 1024)
@@ -370,12 +396,19 @@ def vehicle_validation_engine(payload, decoded):
     weights = {"vin_format":15,"check_digit":15,"nhtsa_decode":15,"year_match":15,"make_match":15,"model_match":15,"dates":5,"address":5}
     score = 0
     for k,w in weights.items():
-        if checks[k] is True: score += w
+        if checks[k] is True:
+            score += w
+        elif k == "check_digit" and checks[k] is None:
+            # European/other non-North-American VINs may not use NHTSA's
+            # check-digit convention. Treat this check as inconclusive, not as
+            # a failure, so it cannot incorrectly block a valid decodable VIN.
+            score += w
     critical_mismatch = any(checks[k] is False for k in ("check_digit","year_match","make_match","model_match"))
     api_missing = not decode_available
     status = "ready" if score >= 90 and not critical_mismatch and not api_missing else "review"
     findings=[]
     if check_ok is False: findings.append(f"El dígito de control del VIN no coincide; se esperaba {payload['expected_check_digit']}.")
+    elif check_ok is None: findings.append("Dígito de control no concluyente para este tipo de VIN; se validará mediante la decodificación técnica.")
     if year_match is False: findings.append(f"El VIN indica año {year_dec}, pero ingresaste {payload['year']}.")
     if make_match is False: findings.append(f"La marca ingresada ({payload['make']}) no coincide con la decodificación ({decoded.get('make') or 'sin dato'}).")
     if model_match is False: findings.append(f"El modelo ingresado ({payload['model']}) no coincide con la decodificación ({decoded.get('model') or 'sin dato'}).")
@@ -670,8 +703,10 @@ def vehicle_decode():
         else:
             decoded = None
     if decoded is None:
-        url = f"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/{quote(vin, safe='')}?format=json"
-        req = Request(url, headers={"User-Agent":"NEXUS-AI-Vehicle-Validation/9.1"})
+        inferred_year = infer_vin_model_year(vin)
+        year_param = f"&modelyear={inferred_year}" if inferred_year else ""
+        url = f"https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/{quote(vin, safe='')}?format=json{year_param}"
+        req = Request(url, headers={"User-Agent":"NEXUS-AI-Vehicle-Validation/10.2"})
         try:
             with urlopen(req, timeout=8) as resp:
                 raw = resp.read(1024 * 1024)
@@ -682,7 +717,7 @@ def vehicle_decode():
                 "manufacturer": clean(row.get("Manufacturer"), 160),
                 "make": clean(row.get("Make"), 80),
                 "model": clean(row.get("Model"), 100),
-                "model_year": clean(row.get("ModelYear"), 4),
+                "model_year": str(inferred_year or clean(row.get("ModelYear"), 4) or ""),
                 "vehicle_type": clean(row.get("VehicleType"), 100),
                 "body_class": clean(row.get("BodyClass"), 120),
                 "plant_country": clean(row.get("PlantCountry"), 80),
@@ -722,7 +757,13 @@ def vehicle_validate():
     if not row:
         return jsonify({"error":"Registro no encontrado o no pertenece a esta sesión."}),404
     try:
-        decoded=fetch_nhtsa_vin(payload["vin"], payload["year"])
+        decode_year = infer_vin_model_year(payload["vin"]) or payload["year"]
+        decoded=fetch_nhtsa_vin(payload["vin"], decode_year)
+        # Some VINs decode to an older cycle (for example J -> 1988) when no
+        # model year is supplied. Prefer the plausible 2010-2026 cycle when it
+        # exists so the UI and validation do not report a false 30-year mismatch.
+        if infer_vin_model_year(payload["vin"]):
+            decoded["model_year"] = str(infer_vin_model_year(payload["vin"]))
     except RuntimeError as exc:
         return jsonify({"error":str(exc),"validation":{"status":"review","score":0,"checks":{},"findings":[str(exc)]}}),503
     validation=vehicle_validation_engine(payload,decoded)
@@ -821,7 +862,7 @@ def vehicle_document():
     ]))
 
     story.append(Paragraph("Validación técnica", styles["NXSection"]))
-    source_line = " · ".join([x for x in [decoded.get("manufacturer"), decoded.get("make"), decoded.get("model"), decoded.get("model_year")] if x])
+    source_line = " · ".join([pdf_text(x) for x in [decoded.get("manufacturer"), decoded.get("make"), decoded.get("model"), decoded.get("model_year")] if x])
     story.append(table([
         ["Resultado", "VALIDACIÓN TÉCNICA SUPERADA"], ["Puntuación NEXUS", f'{data["validation_score"]}/100'],
         ["VIN", "Válido y decodificado"], ["Datos técnicos", source_line or "Sin datos adicionales"],
@@ -832,10 +873,16 @@ def vehicle_document():
     story.append(Paragraph("Privacidad", styles["NXSection"]))
     story.append(Paragraph("El SSN no se incluye en este documento. El número de póliza se muestra parcialmente para reducir la exposición de datos sensibles. La validación técnica del VIN no acredita propiedad del vehículo ni autenticidad de la póliza.", styles["NXSmall"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f'Generado por NEXUS AI · {now()} · Documento {data["passport_ref"]}', styles["NXSmall"]))
+    story.append(Paragraph(f'Generado por NEXUS AI · {pdf_text(now())} · Documento {pdf_text(data["passport_ref"])}', styles["NXSmall"]))
 
-    doc.build(story)
-    pdf=buf.getvalue()
+    try:
+        doc.build(story)
+        pdf=buf.getvalue()
+        if not pdf.startswith(b"%PDF"):
+            raise RuntimeError("El documento PDF no pudo construirse correctamente.")
+    except Exception as exc:
+        app.logger.exception("vehicle_document PDF generation failed")
+        return jsonify({"error":"No fue posible generar el PDF.","detail":str(exc)}),500
     add_event(registration_id, "vehicle_document_generated", "Vehicle registration summary PDF generated", "info", {"score":data["validation_score"]})
     response=make_response(pdf)
     response.headers["Content-Type"]="application/pdf"

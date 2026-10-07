@@ -951,13 +951,13 @@ function clientVinCheck(vin){
  const weights=[8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
  if(!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin))return null;
  let total=0;for(let i=0;i<17;i++){const c=vin[i];const v=/\d/.test(c)?Number(c):map[c];if(v==null)return null;total+=v*weights[i];}
- const rem=total%11, expected=rem===10?"X":String(rem);return {ok:vin[8]===expected,expected};
+ const rem=total%11, expected=rem===10?"X":String(rem); if(!"12345".includes(vin[0])) return {ok:true,inconclusive:true,expected:null}; return {ok:vin[8]===expected,expected};
 }
 async function autofillVehicleFromVin(){
  const vin=vinInput.value.trim().toUpperCase();vinInput.value=vin;
  if(vin.length<17){setVinStatus(vin.length?`VIN: ${vin.length}/17 caracteres.`:"");lastDecodedVin="";return;}
  const check=clientVinCheck(vin);
- if(!check?.ok){setVinStatus(`VIN no válido: el dígito de control debería ser ${check?.expected||"—"}.`,"error");return;}
+ if(check && !check.ok){setVinStatus(`VIN no válido: el dígito de control debería ser ${check.expected||"—"}.`,"error");return;}
  if(vin===lastDecodedVin)return;
  lastDecodedVin=vin;setVinStatus("VIN válido. Consultando datos técnicos…","loading");
  makeInput.classList.remove("autofilled");modelInput.classList.remove("autofilled");yearInput.classList.remove("autofilled");

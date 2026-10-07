@@ -877,7 +877,7 @@ function show(detail){
   validationBox.classList.remove("show");
   document.getElementById("vehicleStatus").textContent="";
   const continueBtn=document.getElementById("continue");
-  if(continueBtn){continueBtn.disabled=false;continueBtn.textContent="CONTINUAR AL PASO 2";}
+  if(continueBtn){continueBtn.disabled=false;continueBtn.textContent="CONTINUAR AL PASO 2";continueBtn.style.pointerEvents="auto";}
   setTimeout(()=>step.scrollIntoView({behavior:"smooth",block:"start"}),60);
 }
 function hide(){step.hidden=true;}
@@ -936,7 +936,7 @@ async function autofillVehicleFromVin(){
     const y=String(d.model_year);const option=[...yearInput.options].find(o=>o.value===y);if(option){yearInput.value=y;yearInput.classList.add("autofilled");}
   }
   const parts=[d.make,d.model,d.model_year].filter(Boolean);
-  if(parts.length){setVinStatus(`✓ Datos autocompletados: ${parts.join(" · ")} · Fuente: NHTSA vPIC.","ok");}
+  if(parts.length){setVinStatus(`✓ Datos autocompletados: ${parts.join(" · ")} · Fuente: NHTSA vPIC.`,"ok");}
   else setVinStatus("VIN válido, pero no hay datos suficientes para autocompletar.","error");
  }catch(e){lastDecodedVin="";setVinStatus(e.message||"No fue posible consultar el VIN.","error");}
 }
